@@ -1,0 +1,26 @@
+dataset,step,issue,action,rows_affected
+basket_details,missing,null values in any column,none found - nothing to impute/drop,0
+basket_details,duplicates,fully identical rows,dropped,0
+basket_details,duplicates,same customer+product on different dates,kept - legitimate repeat purchases,24
+basket_details,dtype,basket_date stored as text,converted to datetime (YYYY-MM-DD),15000
+basket_details,dtype,IDs,confirmed integer identifiers (no decimals / no scientific notation),15000
+basket_details,outlier,zero/negative purchase quantity,none found,0
+basket_details,outlier,basket_count > 5 (99.5th percentile),"flagged in is_outlier_qty, kept (plausible bulk buys)",54
+customer_details,missing,null values,none found as NaN - but see hidden missing values below,0
+customer_details,duplicates,duplicate rows / duplicate customer_id,none found,0
+customer_details,missing,sex = 'kvkktalepsilindi' (Turkish: data-deletion request) or 'UNKNOWN',recoded to 'Unknown' (not guessed - gender is not safely imputable),9
+customer_details,outlier/missing,"age <18 or >100 (e.g. 5, 123, 2022, -34, 149)",treated as invalid placeholder -> set to missing,7451
+customer_details,imputation,missing ages after cleaning,imputed with median of valid ages (32); flagged in age_imputed,7451
+customer_details,dtype,"customer_age float, customer_id","age -> integer, customer_id -> integer",20000
+customer_details,outlier,tenure outside 1.5*IQR,"mildly high (max 133 months) but plausible - kept, not flagged",558
+churn_training,missing,completely empty row(s),dropped (no information to impute from),1
+churn_training,missing,other partially-missing rows,none found,0
+churn_training,duplicates,duplicate rows / duplicate CustomerID,none found,0
+churn_training,dtype,numeric columns stored as float,converted to int; Total Spend kept as float (real decimals),440832
+churn_training,outlier,negative values / extreme values (3*IQR),none found - all columns within plausible ranges,0
+churn_testing,missing,completely empty row(s),dropped (no information to impute from),0
+churn_testing,missing,other partially-missing rows,none found,0
+churn_testing,duplicates,duplicate rows / duplicate CustomerID,none found,0
+churn_testing,dtype,numeric columns already integer,confirmed int; Total Spend kept as float,64374
+churn_testing,outlier,negative values / extreme values (3*IQR),none found - all columns within plausible ranges,0
+churn_train_vs_test,duplicates,CustomerID values appear in both files,kept - different people (0 of 62995 identical); files use separate ID numbering,62995

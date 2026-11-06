@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AUREUS — Churn Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Narrow:wght@400;600;700&family=Newsreader:ital,wght@0,400;0,600;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="churn/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.45.2"></script>
+<script src="churn/data.js"></script>
+</head>
+<body>
+<div class="concrete-bg"></div><div class="grain"></div><div class="ambient-grid"></div>
+<div class="motion-orb" id="motion-orb"></div><div class="motion-orb orb-two" id="motion-orb-two"></div>
+
+<div id="galaxy-transition" class="galaxy-transition" aria-hidden="true">
+  <div class="hyperdrive-vignette"></div>
+  <div class="hyperdrive-grid"></div>
+  <div class="hyperdrive-beam beam-a"></div><div class="hyperdrive-beam beam-b"></div><div class="hyperdrive-beam beam-c"></div>
+  <div class="hyperdrive-shard shard-a"></div><div class="hyperdrive-shard shard-b"></div><div class="hyperdrive-shard shard-c"></div>
+  <div class="hyperdrive-flash"><span id="warp-word">Predict</span></div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <span class="brand"><span class="brand-mark">æ</span>AUREUS / CHURN ENGINE</span>
+  <span class="blue mid">▮▮▮▮ RANDOM FOREST · 100 TREES ▮▮▮▮</span>
+  <span class="live"><span class="status-dot"></span>MODEL ONLINE</span>
+</div>
+
+<div class="nav-wrap">
+  <nav class="tabs">
+    <button class="nav-tab active" id="btn-oracle" onclick="switchTab('tab-oracle')"><span class="n">01</span> Score<b>Predict</b></button>
+    <button class="nav-tab" id="btn-evidence" onclick="switchTab('tab-evidence')"><span class="n">02</span> Data<b>Evidence</b></button>
+    <button class="nav-tab" id="btn-diagnostics" onclick="switchTab('tab-diagnostics')"><span class="n">03</span> Inside<b>The Model</b></button>
+    <button class="nav-tab" id="btn-roi" onclick="switchTab('tab-roi')"><span class="n">04</span> Money<b>ROI</b></button>
+    <button class="nav-tab" id="btn-strategy" onclick="switchTab('tab-strategy')"><span class="n">05</span> Act<b>Playbook</b></button>
+  </nav>
+</div>
+
+<div class="ticker"><div class="ticker-track" id="ticker"></div></div>
+
+<main>
+<!-- ═════════════ 01 PREDICT ═════════════ -->
+<section id="tab-oracle" class="page-content" data-screen-label="01 Predict">
+  <div class="hero">
+    <div class="hero-copy">
+      <div class="meta-strip">
+        <div>Customers<b>440,832</b></div>
+        <div>Base churn<b><em>56.7%</em></b></div>
+        <div>Signals<b>9 inputs</b></div>
+        <div>Engine<b>RF × 100</b></div>
+      </div>
+      <h1 class="mega">
+        <span class="reveal-line"><span>Who's</span></span>
+        <span class="reveal-line"><span><span class="stamp">about</span> to</span></span>
+        <span class="reveal-line"><span><span class="outline">walk</span></span></span>
+        <span class="reveal-line"><span><span class="stamp red">away?</span></span></span>
+      </h1>
+      <div class="hero-sub">Score a customer <span class="x">×</span> see why <span class="x">×</span> act before they cancel</div>
+      <p class="lede">Feed in nine facts about a customer. A Random Forest trained on 440,832 real accounts returns the odds they leave — and, more usefully, <em>which single fact is pushing them out the door.</em></p>
+    </div>
+
+    <div class="box globe-box">
+      <span class="box-lab">3D Reactive Core · drag to spin</span>
+      <div id="three-canvas-container"></div>
+      <div class="stamp-block" id="globe-stamp">LIVE<br><b>SCORE</b></div>
+      <div class="globe-top">
+        <div class="h3">Churn Oracle Globe</div>
+        <div class="legend"><span class="lb">Stable &lt;30</span><span class="ly">Watch 30–60</span><span class="lr">Critical 60+</span></div>
+      </div>
+      <div class="globe-live"><b id="globe-pct">—</b><span>current risk</span></div>
+      <div class="globe-bottom"><span>Risk vector</span><span id="globe-status-badge">NOMINAL</span></div>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><div class="num">01</div><h4>Pick a customer</h4><p>Start from one of three archetypes below, or drag the sliders to describe anyone.</p></div>
+    <div class="step"><div class="num">02</div><h4>Watch it react</h4><p>Every change re-scores instantly. The globe shifts colour, the gauge moves, the decision path rewrites itself.</p></div>
+    <div class="step"><div class="num">03</div><h4>Pull the lever</h4><p>The engine finds the one change that would drop risk the most — then the Playbook tells you how.</p></div>
+  </div>
+
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">Step 01</span> Archetypes <span class="x">×</span> one click</div><h2 class="h2" style="margin-top:12px">Start with a <span class="stamp">signal</span></h2></div>
+    <p class="lede">Each preset loads a real-looking profile into the terminal so you can see how the model treats it.</p>
+  </div>
+  <div class="presets">
+    <button class="preset p-blue" data-tilt data-tilt-max="8" onclick="loadPreset('loyal', this)"><span class="arrow">↗</span><span class="tag">Low risk</span><h4>Loyal<br>VIP</h4><p>0 support calls · $1,000 spend · Annual contract · 48 months in.</p></button>
+    <button class="preset p-yellow" data-tilt data-tilt-max="8" onclick="loadPreset('atrisk', this)"><span class="arrow">↗</span><span class="tag">Watch list</span><h4>Wobbly<br>Regular</h4><p>3 support calls · Quarterly contract · bills paid 18 days late.</p></button>
+    <button class="preset p-red" data-tilt data-tilt-max="8" onclick="loadPreset('churner', this)"><span class="arrow">↗</span><span class="tag">Critical</span><h4>Critical<br>Churner</h4><p>6 support calls · 25-day payment delay · Monthly · $250 spend.</p></button>
+  </div>
+
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">Step 02</span> Parameter terminal</div><h2 class="h2" style="margin-top:12px">Describe the <span class="stamp red">customer</span></h2></div>
+    <p class="lede">Bars under each slider show how much churn the dataset sees at that value. Red = danger zone.</p>
+  </div>
+
+  <div class="terminal">
+    <form id="predict-form" class="box term-form">
+      <span class="box-lab">Client parameter terminal</span>
+      <div id="sliders"></div>
+      <div class="seg-row">
+        <div><span class="lab">Contract</span><div class="seg" data-key="contract_length"><button type="button" data-v="Monthly">Month</button><button type="button" data-v="Quarterly">Quarter</button><button type="button" data-v="Annual">Annual</button></div><div class="seg-note" id="note-contract_length"></div></div>
+        <div><span class="lab">Tier</span><div class="seg" data-key="subscription_type"><button type="button" data-v="Basic">Basic</button><button type="button" data-v="Standard">Std</button><button type="button" data-v="Premium">Prem</button></div><div class="seg-note" id="note-subscription_type"></div></div>
+        <div><span class="lab">Gender</span><div class="seg" data-key="gender"><button type="button" data-v="Female">F</button><button type="button" data-v="Male">M</button></div><div class="seg-note" id="note-gender"></div></div>
+      </div>
+      <button type="submit" class="btn full"><span class="btn-label">Run full forest prediction</span> <i>↗</i></button>
+    </form>
+
+    <div id="result-box" class="box result">
+      <span class="box-lab">Inference vector</span>
+      <span class="src" id="risk-src">LIVE · DISTILLED TREE</span>
+      <div class="score-row">
+        <div><div id="risk-score">0<span class="pct">%</span></div><div class="score-cap">Probability this customer churns</div></div>
+        <div id="risk-badge">Tier<b>—</b></div>
+      </div>
+      <div class="gauge"><div id="risk-progress"></div><div class="mk" style="left:30%"></div><div class="mk" style="left:60%"></div></div>
+      <div class="gauge-scale"><span>0 · Stable</span><span>30 · Watch</span><span>60 · Critical</span><span>100</span></div>
+
+      <div class="rsec"><h5>Why — the decision path <span>read top → bottom</span></h5><ol class="path" id="path"></ol></div>
+      <div class="rsec"><h5>Biggest lever <span>one change, max impact</span></h5><div class="lever" id="lever"></div></div>
+      <div class="rsec"><h5>AI retention suggestion</h5><div id="recommendation-text">Pick a preset or move a slider.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ 02 EVIDENCE ═════════════ -->
+<section id="tab-evidence" class="page-content hidden" data-screen-label="02 Evidence">
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">440,832 rows</span> What the data says</div><h2 class="h2" style="margin-top:12px">Churn has <span class="stamp red">cliffs,</span><br>not slopes.</h2></div>
+    <p class="lede">Most signals do nothing — until they cross a line. Then churn jumps straight to 100%. Pick a signal to see its curve.</p>
+  </div>
+  <div class="chips" id="ev-chips"></div>
+  <div class="evidence">
+    <div class="box chart-box"><span class="box-lab" id="ev-lab">Churn rate by value</span><div id="chart-evidence" style="height:400px"></div></div>
+    <div class="ev-side">
+      <div class="box dark" style="padding:44px 22px 22px"><span class="box-lab">Reading</span>
+        <div id="ev-title">Support calls</div>
+        <div class="ev-big" id="ev-big" style="margin:16px 0 8px">5<small>+ calls</small></div>
+        <p class="body" id="ev-text" style="color:var(--concrete)"></p>
+      </div>
+      <div class="box" style="padding:40px 22px 18px"><span class="box-lab">Customers in each bucket</span><div id="chart-count" style="height:150px"></div></div>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">The five tripwires</span> Click to test in the terminal</div><h2 class="h2" style="margin-top:12px">Cross one, <span class="stamp">lose them.</span></h2></div>
+  </div>
+  <div class="cliffs" id="cliffs"></div>
+</section>
+
+<!-- ═════════════ 03 MODEL ═════════════ -->
+<section id="tab-diagnostics" class="page-content hidden" data-screen-label="03 Model">
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">How it works</span> From CSV to score</div><h2 class="h2" style="margin-top:12px">Inside the <span class="stamp">forest</span></h2></div>
+    <p class="lede">A Random Forest is 100 decision trees voting. Each tree asks yes/no questions; the share of trees voting “churn” is the probability.</p>
+  </div>
+  <div class="pipeline">
+    <div class="pipe"><div class="num">STEP 01</div><h4>Clean</h4><p><code>clean_data.py</code> drops empty rows, fixes types, recodes bad ages & genders. 25 logged fixes.</p></div>
+    <div class="pipe"><div class="num">STEP 02</div><h4>Encode</h4><p>Gender, tier and contract become 0/1 columns. 12 features total; CustomerID removed.</p></div>
+    <div class="pipe"><div class="num">STEP 03</div><h4>Train</h4><p><code>churn.py</code> fits 100 trees, max depth 15, on an 80/20 stratified split.</p></div>
+    <div class="pipe"><div class="num">STEP 04</div><h4>Serve</h4><p><code>app.py</code> (Flask) answers <code>/predict</code> and <code>/chat</code> for this interface.</p></div>
+  </div>
+
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">Live</span> 100 trees vote on the current customer</div><h2 class="h2" style="margin-top:12px">The <span class="stamp red">vote</span></h2></div>
+    <p class="lede" id="vote-cap">Red = votes churn. Blue = votes stay.</p>
+  </div>
+  <div class="box" style="padding:44px 22px 22px"><span class="box-lab" id="vote-lab">Forest ballot</span><div class="forest" id="forest"></div></div>
+
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">churn_model.pkl</span> Feature importance</div><h2 class="h2" style="margin-top:12px">What the model <span class="stamp">listens</span> to</h2></div>
+  </div>
+  <div class="model-grid">
+    <div class="box chart-box"><span class="box-lab">Share of decisions driven by each feature</span><div id="chart-feature-weights" style="height:420px"></div></div>
+    <div class="box dark acc"><span class="box-lab">Accuracy — the honest version</span>
+      <div class="row"><b>99.9%</b><span>Held-out 20% of training file</span></div>
+      <div class="row"><b>50.5%</b><span>Separate testing CSV (64,374 rows)</span></div>
+      <div class="warn"><strong>Read this before trusting a score</strong>The training data has hard “cliffs” (e.g. every Monthly customer churned). The model learned them perfectly, but the separate test file doesn't follow the same rules — so treat scores as a ranking of risk patterns, not a guarantee.</div>
+      <p class="body" style="color:var(--concrete);font-size:15px">Top three features — support calls, total spend, age — drive 65% of all splits. Tenure, usage and tier barely matter.</p>
+    </div>
+  </div>
+
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">cleaning_log.csv</span> What we fixed</div><h2 class="h2" style="margin-top:12px">Data <span class="outline">hygiene</span></h2></div>
+  </div>
+  <div class="box" style="padding:0;overflow:auto">
+    <table class="log"><thead><tr><th>Dataset</th><th>Issue</th><th>Action</th><th>Rows</th></tr></thead><tbody id="log-body"></tbody></table>
+  </div>
+</section>
+
+<!-- ═════════════ 04 ROI ═════════════ -->
+<section id="tab-roi" class="page-content hidden" data-screen-label="04 ROI">
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">Calculator</span> Revenue recovery</div><h2 class="h2" style="margin-top:12px">What saving them is <span class="stamp yellow">worth</span></h2></div>
+    <p class="lede">If the model flags at-risk customers early and your team wins back a share of them, here is the yearly revenue you keep.</p>
+  </div>
+  <div class="roi">
+    <div class="box roi-form"><span class="box-lab">Assumptions</span><div id="roi-sliders"></div></div>
+    <div class="box dark roi-out"><span class="box-lab">Projected annual revenue recovered</span>
+      <h3 id="roi-total">$0</h3>
+      <div class="formula" id="roi-formula"></div>
+      <div class="people" id="people"></div>
+      <div class="people-cap"><span>At-risk customer</span><span class="s">Retained by intervention</span></div>
+      <p class="body" id="roi-copy" style="color:var(--concrete);margin-top:18px;font-size:16px"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ 05 PLAYBOOK ═════════════ -->
+<section id="tab-strategy" class="page-content hidden" data-screen-label="05 Playbook">
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">Operational response</span> By risk tier</div><h2 class="h2" style="margin-top:12px">Score → <span class="stamp red">action.</span></h2></div>
+    <p class="lede">Every score maps to one of three protocols. Click “load example” to send a matching customer to the terminal.</p>
+  </div>
+  <div class="protocols">
+    <div class="box protocol c lift"><div class="ph"><div class="r">Risk &gt; 60%</div><h4>Critical<br>protocol</h4></div><div class="pb">
+      <div class="trig">Trigger: 5+ support calls · delay &gt; 20 days · monthly</div>
+      <ol><li>Dispatch VIP concierge outreach within 2 hours.</li><li>Offer 20% discount on a renewal contract.</li><li>Pause automated billing reminders.</li></ol>
+      <button class="try" onclick="loadPreset('churner');switchTab('tab-oracle')">Load example ↗</button></div></div>
+    <div class="box protocol m lift"><div class="ph"><div class="r">Risk 30 – 60%</div><h4>Watch<br>protocol</h4></div><div class="pb">
+      <div class="trig">Trigger: 3–4 calls · late interactions · dropping usage</div>
+      <ol><li>Enrol in a 3-part tutorial email re-engagement series.</li><li>Offer 1-click upgrade to Annual with $50 bonus credit.</li></ol>
+      <button class="try" onclick="loadPreset('atrisk');switchTab('tab-oracle')">Load example ↗</button></div></div>
+    <div class="box protocol s lift"><div class="ph"><div class="r">Risk &lt; 30%</div><h4>Stable<br>protocol</h4></div><div class="pb">
+      <div class="trig">Trigger: long tenure · zero complaints · steady spend</div>
+      <ol><li>Target for cross-sell to the Premium tier.</li><li>Invite to the exclusive beta-tester cohort.</li></ol>
+      <button class="try" onclick="loadPreset('loyal');switchTab('tab-oracle')">Load example ↗</button></div></div>
+  </div>
+
+  <div class="section-head">
+    <div><div class="kicker"><span class="tag">From the data</span> Four structural fixes</div><h2 class="h2" style="margin-top:12px">Stop it <span class="stamp">upstream</span></h2></div>
+  </div>
+  <div class="cliffs">
+    <div class="cliff"><div class="k">Contracts</div><div class="v r">100%</div><p>of Monthly customers churned. Convert them to Quarterly/Annual (46%) with a credit.</p></div>
+    <div class="cliff"><div class="k">Support cap</div><div class="v r">5th call</div><p>is where churn jumps from 58% to 95%. Assign a human after the 3rd ticket.</p></div>
+    <div class="cliff"><div class="k">Billing</div><div class="v r">20 days</div><p>late is the cut-off. Send friendly reminders at day 10 and day 15.</p></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="huge">AUREUS</div>
+  <p>Dynamic 3D machine-learning engine<br>Random Forest · Flask · Three.js<br><span style="color:var(--blue)">▮▮▮▮</span> Retain on purpose</p>
+</footer>
+
+<!-- CHAT -->
+<div id="chatbot-wrapper" class="floating-chat">
+  <div id="chat-window" class="hidden">
+    <div class="chat-head"><span>Retention <span class="blue">AI</span> analyst</span><button onclick="toggleChatbot()" aria-label="Close">×</button></div>
+    <div id="chat-messages"><div class="msg bot" style="opacity:1;transform:none"><strong>Hello.</strong> Ask me about age groups, contract safety, support calls — or how to reduce churn.</div></div>
+    <div class="quick">
+      <button onclick="sendQuickChat('Which age group churns the most?')">Age groups?</button>
+      <button onclick="sendQuickChat('What contract length is safest?')">Contracts?</button>
+      <button onclick="sendQuickChat('How do support calls affect churn?')">Support calls?</button>
+      <button onclick="sendQuickChat('How to reduce churn?')">Measures?</button>
+    </div>
+    <form id="chat-form"><input id="chat-input" placeholder="Ask about trends or strategy…" autocomplete="off"><button type="submit">Send</button></form>
+  </div>
+  <button id="chat-toggle-btn" onclick="toggleChatbot()" aria-label="Open assistant">ASK<b>AI</b></button>
+</div>
+
+<script src="churn/engine.js"></script>
+<script src="churn/app.js"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>

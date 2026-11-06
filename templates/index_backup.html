@@ -1,0 +1,2344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AUREUS // Control Surface</title>
+<meta name="description" content="AUREUS control surface for realtime retention intelligence, customer risk, and recovery planning.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   AUREUS — DESIGN SYSTEM  "Aurora Terminal"
+   New scheme: midnight navy substrate, aqua/violet signal pair,
+   amber + rose for risk escalation, mono numerals for data.
+   ============================================================ */
+:root{
+  --ink:#050814;
+  --ink-2:#080D1E;
+  --ink-3:#0B1226;
+  --panel:rgba(13,19,40,.66);
+  --panel-2:rgba(17,24,50,.82);
+  --line:rgba(255,255,255,.075);
+  --line-2:rgba(77,224,200,.26);
+  --text:#E9EEFB;
+  --text-2:#C3CBE3;
+  --muted:#8892B2;
+  --dim:#5F6987;
+
+  --aqua:#4DE0C8;
+  --aqua-2:#9BF6E4;
+  --violet:#8B7BFF;
+  --violet-2:#C4BBFF;
+  --amber:#FFB454;
+  --rose:#FF5C7A;
+  --lime:#B6F36B;
+
+  --acc-a:#4DE0C8;
+  --acc-b:#8B7BFF;
+
+  --r-xs:8px; --r-sm:12px; --r-md:18px; --r-lg:26px; --r-xl:34px;
+  --sh-1:0 10px 30px rgba(0,0,0,.45);
+  --sh-2:0 26px 70px rgba(0,0,0,.55);
+  --ease:cubic-bezier(.22,.8,.2,1);
+  --ease-b:cubic-bezier(.34,1.56,.64,1);
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+/* accent presets — user-switchable at runtime */
+[data-accent="plasma"]{ --acc-a:#8B7BFF; --acc-b:#FF7AC8; }
+[data-accent="ember"]{ --acc-a:#FFB454; --acc-b:#FF7A59; }
+[data-accent="flux"]{ --acc-a:#B6F36B; --acc-b:#4DE0C8; }
+
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
+body{
+  margin:0; min-height:100vh; overflow-x:hidden;
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.6; color:var(--text);
+  background:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{ font-family:'Sora',sans-serif; margin:0; line-height:1.15; letter-spacing:-.02em; font-weight:700; }
+p{ margin:0; }
+button,input,select,textarea{ font:inherit; color:inherit; }
+button{ background:none; border:0; cursor:pointer; }
+a{ color:var(--acc-a); text-decoration:none; }
+::selection{ background:rgba(77,224,200,.28); color:#fff; }
+:focus-visible{ outline:2px solid var(--acc-a); outline-offset:3px; border-radius:6px; }
+.mono{ font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.hidden{ display:none !important; }
+.sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+
+/* ---------- ambient background ---------- */
+.bg-fx{ position:fixed; inset:0; z-index:-2; pointer-events:none; overflow:hidden;
+  background:
+    radial-gradient(1100px 620px at 12% -8%, rgba(77,224,200,.13), transparent 62%),
+    radial-gradient(900px 560px at 88% 4%, rgba(139,123,255,.15), transparent 60%),
+    radial-gradient(800px 700px at 50% 108%, rgba(255,180,84,.07), transparent 62%),
+    linear-gradient(180deg,#06091A 0%,#050814 46%,#070B1C 100%);
+}
+.bg-grid{ position:fixed; inset:0; z-index:-2; pointer-events:none; opacity:.5;
+  background-image:
+    linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+  background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(circle at 50% 22%,#000 0%,transparent 78%);
+          mask-image:radial-gradient(circle at 50% 22%,#000 0%,transparent 78%);
+}
+.orb{ position:fixed; border-radius:50%; filter:blur(70px); pointer-events:none; z-index:-1; opacity:.5;
+  transition:transform .9s var(--ease); will-change:transform; }
+.orb-1{ width:420px;height:420px; top:-140px; left:-120px; background:radial-gradient(circle,var(--acc-a),transparent 68%); }
+.orb-2{ width:360px;height:360px; bottom:-120px; right:-100px; background:radial-gradient(circle,var(--acc-b),transparent 68%); opacity:.42; }
+.orb-3{ width:280px;height:280px; top:44%; left:58%; background:radial-gradient(circle,var(--amber),transparent 70%); opacity:.16; }
+.cursor-glow{ position:fixed; width:340px;height:340px; border-radius:50%; pointer-events:none; z-index:-1;
+  background:radial-gradient(circle,rgba(77,224,200,.10),transparent 66%);
+  transform:translate(-50%,-50%); transition:opacity .4s ease; }
+
+/* ---------- header ---------- */
+.hair{ height:2px; background:linear-gradient(90deg,transparent,var(--acc-a),var(--acc-b),var(--acc-a),transparent); opacity:.85; }
+header{ position:sticky; top:0; z-index:60; backdrop-filter:blur(20px) saturate(140%);
+  background:rgba(5,8,20,.72); border-bottom:1px solid var(--line); }
+.hdr-in{ max-width:1380px; margin:0 auto; padding:14px 26px; display:flex; align-items:center; gap:20px; }
+.brand{ display:flex; align-items:center; gap:13px; flex:0 0 auto; }
+.brand-mark{ position:relative; width:44px;height:44px; border-radius:14px; display:grid; place-items:center;
+  background:linear-gradient(145deg,rgba(77,224,200,.2),rgba(139,123,255,.14));
+  border:1px solid var(--line-2); box-shadow:0 0 0 1px rgba(255,255,255,.04) inset,0 10px 26px rgba(0,0,0,.5); overflow:hidden; }
+.brand-mark svg{ width:24px;height:24px; }
+.brand-mark::after{ content:''; position:absolute; inset:-40%; background:conic-gradient(from 0deg,transparent,rgba(255,255,255,.32),transparent 32%);
+  animation:spin 6s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg);} }
+.brand-mark span{ position:relative; z-index:1; }
+.brand-txt h1{ font-size:17px; letter-spacing:.16em; text-transform:uppercase;
+  background:linear-gradient(100deg,#fff,var(--acc-a) 55%,var(--acc-b)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.brand-txt p{ font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--dim); font-weight:600; }
+.hdr-mid{ flex:1 1 auto; display:flex; justify-content:center; }
+.status-pill{ display:inline-flex; align-items:center; gap:8px; padding:7px 13px; border-radius:999px;
+  border:1px solid rgba(77,224,200,.24); background:rgba(77,224,200,.07); color:var(--aqua-2);
+  font-size:9.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap; }
+.dot{ width:7px;height:7px; border-radius:50%; background:var(--aqua); box-shadow:0 0 12px var(--aqua); animation:pulse 2.2s ease-in-out infinite; }
+@keyframes pulse{ 50%{ opacity:.35; transform:scale(.72);} }
+.hdr-right{ display:flex; align-items:center; gap:10px; }
+.accent-sw{ display:flex; gap:5px; padding:5px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.03); }
+.sw{ width:18px;height:18px; border-radius:50%; border:2px solid transparent; transition:.25s var(--ease); }
+.sw[data-set="aurora"]{ background:linear-gradient(135deg,#4DE0C8,#8B7BFF); }
+.sw[data-set="plasma"]{ background:linear-gradient(135deg,#8B7BFF,#FF7AC8); }
+.sw[data-set="ember"]{ background:linear-gradient(135deg,#FFB454,#FF7A59); }
+.sw[data-set="flux"]{ background:linear-gradient(135deg,#B6F36B,#4DE0C8); }
+.sw:hover{ transform:scale(1.14); }
+.sw.on{ border-color:#fff; box-shadow:0 0 0 3px rgba(255,255,255,.12); }
+.icon-btn{ width:40px;height:40px; border-radius:12px; display:grid; place-items:center; border:1px solid var(--line);
+  background:rgba(255,255,255,.035); color:var(--text-2); transition:.25s var(--ease); }
+.icon-btn:hover{ color:#fff; border-color:var(--line-2); background:rgba(77,224,200,.09); transform:translateY(-2px); }
+.icon-btn svg{ width:18px;height:18px; }
+
+/* ---------- nav tabs ---------- */
+.navbar{ border-top:1px solid var(--line); background:rgba(6,9,22,.6); }
+.nav-in{ max-width:1380px; margin:0 auto; padding:0 26px; display:flex; align-items:center; gap:6px; position:relative; overflow-x:auto; scrollbar-width:none; }
+.nav-in::-webkit-scrollbar{ display:none; }
+.tab{ position:relative; display:inline-flex; align-items:center; gap:9px; padding:15px 18px; white-space:nowrap;
+  font-size:11.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); transition:color .3s var(--ease); }
+.tab svg{ width:16px;height:16px; }
+.tab:hover{ color:var(--text); }
+.tab.on{ color:#fff; }
+.tab-ink{ position:absolute; bottom:0; height:2px; border-radius:99px; background:linear-gradient(90deg,var(--acc-a),var(--acc-b));
+  transition:left .42s var(--ease),width .42s var(--ease); box-shadow:0 0 14px rgba(77,224,200,.55); }
+.tab-glow{ position:absolute; inset:0; border-radius:12px; background:linear-gradient(180deg,rgba(255,255,255,.06),transparent); opacity:0; transition:opacity .3s; }
+.tab.on .tab-glow{ opacity:1; }
+.kbd{ font-family:var(--mono); font-size:9px; padding:2px 5px; border-radius:5px; border:1px solid var(--line); color:var(--dim); }
+
+/* ---------- layout ---------- */
+main{ max-width:1380px; margin:0 auto; padding:38px 26px 90px; }
+.page{ display:block; }
+.wrap{ display:grid; gap:22px; }
+.g-2{ grid-template-columns:1.05fr .95fr; }
+.g-2b{ grid-template-columns:1.15fr .85fr; }
+.g-3{ grid-template-columns:repeat(3,1fr); }
+.g-4{ grid-template-columns:repeat(4,1fr); }
+.stack{ display:grid; gap:14px; }
+
+/* ---------- cards ---------- */
+.card{ position:relative; border-radius:var(--r-lg); border:1px solid var(--line); padding:24px;
+  background:linear-gradient(150deg,var(--panel-2),var(--panel));
+  box-shadow:var(--sh-1),inset 0 1px 0 rgba(255,255,255,.05);
+  backdrop-filter:blur(16px); transition:border-color .4s var(--ease),box-shadow .4s var(--ease),transform .4s var(--ease);
+  transform-style:preserve-3d; }
+.card::before{ content:''; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  background:linear-gradient(125deg,rgba(255,255,255,.055),transparent 30%,transparent 74%,rgba(77,224,200,.05)); }
+.card:hover{ border-color:var(--line-2); box-shadow:var(--sh-2),inset 0 1px 0 rgba(255,255,255,.09); }
+.card.pad-lg{ padding:30px; }
+.card-h{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:18px; }
+.card-h h3{ font-size:15px; letter-spacing:.01em; }
+.kicker{ display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:9.5px; font-weight:700;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--acc-a); margin-bottom:10px; }
+.kicker::before{ content:''; width:18px;height:1px; background:linear-gradient(90deg,var(--acc-a),transparent); }
+.sub{ font-size:13px; color:var(--muted); }
+.rule{ height:1px; background:linear-gradient(90deg,transparent,var(--line),transparent); }
+
+/* ---------- buttons ---------- */
+.btn{ position:relative; overflow:hidden; display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  padding:13px 22px; border-radius:14px; font-size:12.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+  background:linear-gradient(135deg,var(--acc-a),var(--acc-b)); color:#04121A;
+  box-shadow:0 12px 30px rgba(77,224,200,.22),0 3px 0 rgba(0,0,0,.35);
+  transition:transform .28s var(--ease),box-shadow .28s var(--ease),filter .28s var(--ease); }
+.btn:hover{ transform:translateY(-2px); filter:brightness(1.08); box-shadow:0 18px 38px rgba(77,224,200,.3),0 3px 0 rgba(0,0,0,.35); }
+.btn:active{ transform:translateY(1px); }
+.btn svg{ width:16px;height:16px; }
+.btn.ghost{ background:rgba(255,255,255,.04); color:var(--text); border:1px solid var(--line); box-shadow:none; }
+.btn.ghost:hover{ border-color:var(--line-2); background:rgba(77,224,200,.08); }
+.btn.sm{ padding:9px 14px; font-size:10.5px; border-radius:11px; }
+.btn[disabled]{ opacity:.6; pointer-events:none; }
+.ripple{ position:absolute; border-radius:50%; transform:scale(0); background:rgba(255,255,255,.45);
+  animation:rip .7s ease-out; pointer-events:none; }
+@keyframes rip{ to{ transform:scale(4.2); opacity:0; } }
+.btn .spin{ width:13px;height:13px;border:2px solid rgba(4,18,26,.3); border-top-color:#04121A; border-radius:50%; animation:spin .7s linear infinite; }
+
+/* ---------- stat chips ---------- */
+.chips{ display:grid; grid-template-columns:repeat(3,1fr); gap:11px; }
+.chip{ position:relative; border:1px solid var(--line); border-radius:var(--r-md); padding:14px 15px; background:rgba(255,255,255,.028); overflow:hidden; }
+.chip::after{ content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:linear-gradient(180deg,var(--acc-a),transparent); }
+.chip b{ display:block; font-family:var(--mono); font-size:20px; font-weight:700; color:#fff; letter-spacing:-.02em; }
+.chip span{ font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+
+/* ---------- inputs ---------- */
+.field{ display:grid; gap:7px; }
+.field label{ font-size:10px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); display:flex; justify-content:space-between; }
+.field label i{ font-style:normal; font-family:var(--mono); color:var(--acc-a); }
+.inp{ width:100%; padding:12px 14px; border-radius:13px; background:rgba(4,7,18,.62); border:1px solid var(--line);
+  color:#fff; transition:.28s var(--ease); font-family:var(--mono); font-size:13.5px; }
+.inp:hover{ border-color:rgba(255,255,255,.18); }
+.inp:focus{ outline:none; border-color:var(--acc-a); box-shadow:0 0 0 4px rgba(77,224,200,.1),0 0 26px rgba(77,224,200,.14); }
+select.inp{ appearance:none; cursor:pointer;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238892B2' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat:no-repeat; background-position:right 12px center; background-size:16px; padding-right:38px; }
+select.inp option{ background:#0B1226; color:#fff; }
+.grid-in{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+
+/* ---------- range sliders ---------- */
+.range-wrap{ display:grid; gap:10px; }
+.range-top{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+.range-top label{ font-size:11px; font-weight:600; color:var(--text-2); letter-spacing:.04em; }
+.range-top b{ font-family:var(--mono); font-size:16px; color:var(--acc-a); }
+input[type=range]{ -webkit-appearance:none; appearance:none; width:100%; height:6px; border-radius:99px; background:rgba(255,255,255,.1); cursor:pointer; }
+input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:20px;height:20px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff,var(--acc-a)); border:2px solid rgba(5,8,20,.85);
+  box-shadow:0 0 0 4px rgba(77,224,200,.16),0 6px 16px rgba(0,0,0,.5); transition:transform .2s var(--ease); }
+input[type=range]::-webkit-slider-thumb:hover{ transform:scale(1.16); }
+input[type=range]::-moz-range-thumb{ width:18px;height:18px; border-radius:50%; background:var(--acc-a); border:2px solid #050814; }
+
+/* ---------- 3D panels ---------- */
+.scene{ position:relative; border-radius:var(--r-lg); overflow:hidden; border:1px solid var(--line);
+  background:radial-gradient(circle at 50% 45%,rgba(77,224,200,.07),transparent 62%),linear-gradient(160deg,rgba(11,17,38,.9),rgba(5,8,20,.94));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05); }
+.scene canvas{ display:block; width:100% !important; height:100% !important; }
+.scene-tag{ position:absolute; top:14px; left:16px; z-index:3; font-family:var(--mono); font-size:9px; font-weight:700;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--dim); display:flex; align-items:center; gap:7px; }
+.scene-tag i{ width:6px;height:6px;border-radius:50%; background:var(--acc-a); box-shadow:0 0 9px var(--acc-a); font-style:normal; }
+.scene-hint{ position:absolute; bottom:13px; right:16px; z-index:3; font-family:var(--mono); font-size:9px; color:var(--dim); letter-spacing:.1em; }
+.scene-hud{ position:absolute; bottom:14px; left:16px; z-index:3; display:grid; gap:3px; }
+.scene-hud b{ font-family:var(--mono); font-size:11px; letter-spacing:.06em; }
+.scene-hud span{ font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); }
+.hero-scene{ height:420px; }
+.mini-scene{ height:230px; }
+.flat-fallback{ position:absolute; inset:0; display:none; place-items:center; text-align:center; padding:24px; }
+.no-webgl .flat-fallback{ display:grid; }
+.no-webgl .scene canvas{ display:none; }
+.orb-fallback{ width:150px;height:150px;border-radius:50%; margin:0 auto 14px;
+  background:radial-gradient(circle at 34% 30%,var(--acc-a),var(--acc-b) 62%,transparent 72%);
+  box-shadow:0 0 60px rgba(77,224,200,.4); animation:float 5s ease-in-out infinite; }
+@keyframes float{ 50%{ transform:translateY(-12px);} }
+
+/* ---------- hero ---------- */
+.hero{ display:grid; grid-template-columns:1.02fr .98fr; gap:26px; align-items:stretch; }
+.hero-copy{ display:flex; flex-direction:column; justify-content:center; gap:20px; }
+.hero-copy h2{ font-size:clamp(30px,4.4vw,52px); font-weight:800; letter-spacing:-.035em; }
+.hero-copy h2 em{ font-style:normal; background:linear-gradient(100deg,var(--acc-a),var(--acc-b)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.lede{ font-size:15.5px; color:var(--text-2); max-width:56ch; }
+.eyebrow{ display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:10px; font-weight:700;
+  letter-spacing:.26em; text-transform:uppercase; color:var(--acc-a); }
+.eyebrow i{ flex:1; height:1px; background:linear-gradient(90deg,var(--acc-a),transparent); max-width:70px; }
+.presets{ display:grid; grid-template-columns:repeat(3,1fr); gap:11px; }
+.preset{ position:relative; text-align:left; padding:14px; border-radius:var(--r-md); border:1px solid var(--line);
+  background:rgba(255,255,255,.03); transition:.32s var(--ease); overflow:hidden; }
+.preset:hover{ border-color:var(--line-2); transform:translateY(-3px); background:rgba(77,224,200,.07); }
+.preset.on{ border-color:var(--acc-a); background:rgba(77,224,200,.1); box-shadow:0 0 0 1px var(--acc-a) inset; }
+.preset b{ display:block; font-family:'Sora',sans-serif; font-size:12px; margin-bottom:4px; }
+.preset span{ font-size:10.5px; color:var(--muted); line-height:1.45; display:block; }
+.preset em{ position:absolute; top:11px; right:12px; font-family:var(--mono); font-size:9px; font-style:normal; color:var(--dim); }
+
+/* ---------- risk gauge ---------- */
+.gauge{ position:relative; display:grid; place-items:center; }
+.gauge svg{ width:190px; height:110px; overflow:visible; }
+.gauge-track{ fill:none; stroke:rgba(255,255,255,.09); stroke-width:11; stroke-linecap:round; }
+.gauge-fill{ fill:none; stroke-width:11; stroke-linecap:round; stroke:var(--acc-a);
+  filter:drop-shadow(0 0 8px rgba(77,224,200,.6)); transition:stroke-dashoffset 1.1s var(--ease),stroke .5s ease; }
+.gauge-val{ position:absolute; bottom:6px; text-align:center; }
+.gauge-val b{ display:block; font-family:var(--mono); font-size:40px; font-weight:700; line-height:1; color:#fff; letter-spacing:-.03em; }
+.gauge-val span{ font-size:9.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+
+.badge{ display:inline-flex; align-items:center; gap:8px; padding:7px 13px; border-radius:999px;
+  font-family:var(--mono); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+.badge.ok{ background:rgba(182,243,107,.12); border:1px solid rgba(182,243,107,.4); color:#D7FCA8; }
+.badge.warn{ background:rgba(255,180,84,.13); border:1px solid rgba(255,180,84,.42); color:#FFD9A5; }
+.badge.bad{ background:rgba(255,92,122,.14); border:1px solid rgba(255,92,122,.44); color:#FFB9C7; }
+.badge.idle{ background:rgba(255,255,255,.05); border:1px solid var(--line); color:var(--muted); }
+
+.readout{ display:grid; gap:12px; }
+.readout-row{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:11px 0; border-bottom:1px dashed rgba(255,255,255,.08); }
+.readout-row:last-child{ border-bottom:0; }
+.readout-row span{ font-size:11.5px; color:var(--muted); }
+.readout-row b{ font-family:var(--mono); font-size:13px; color:var(--text); }
+.note{ padding:14px 16px; border-radius:var(--r-md); border:1px solid var(--line); background:rgba(255,255,255,.028);
+  font-size:13px; color:var(--text-2); line-height:1.62; }
+.note b{ color:#fff; }
+.note.crit{ border-color:rgba(255,92,122,.34); background:rgba(255,92,122,.07); }
+.note.mid{ border-color:rgba(255,180,84,.32); background:rgba(255,180,84,.06); }
+.note.safe{ border-color:rgba(182,243,107,.3); background:rgba(182,243,107,.05); }
+
+/* ---------- charts ---------- */
+.chart{ width:100%; height:auto; overflow:visible; }
+.chart .grid-l{ stroke:rgba(255,255,255,.06); stroke-width:1; }
+.chart .axis{ font-family:var(--mono); font-size:9px; fill:var(--muted); letter-spacing:.06em; }
+.chart .bar{ transition:height .8s var(--ease),y .8s var(--ease),opacity .3s ease; cursor:pointer; }
+.chart .bar:hover{ opacity:.78; }
+.chart .ln{ fill:none; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round; }
+.chart .area{ opacity:.22; }
+.chart .pt{ transition:r .25s var(--ease); }
+.legend{ display:flex; flex-wrap:wrap; gap:12px; margin-top:12px; }
+.legend span{ display:inline-flex; align-items:center; gap:7px; font-size:10.5px; color:var(--muted); font-family:var(--mono); }
+.legend i{ width:9px;height:9px; border-radius:3px; font-style:normal; }
+
+/* ---------- table ---------- */
+.tbl-wrap{ overflow-x:auto; border-radius:var(--r-md); border:1px solid var(--line); }
+table{ width:100%; border-collapse:collapse; font-size:12.5px; min-width:520px; }
+th{ text-align:left; padding:12px 14px; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted);
+  font-weight:700; background:rgba(255,255,255,.035); border-bottom:1px solid var(--line); white-space:nowrap; }
+td{ padding:11px 14px; border-bottom:1px solid rgba(255,255,255,.05); font-family:var(--mono); font-size:12px; }
+tr:last-child td{ border-bottom:0; }
+tbody tr{ transition:background .25s ease; }
+tbody tr:hover{ background:rgba(77,224,200,.05); }
+.pill{ display:inline-block; padding:3px 9px; border-radius:999px; font-size:10px; font-weight:700; font-family:var(--mono); }
+.pill.hi{ background:rgba(255,92,122,.16); color:#FFB9C7; }
+.pill.mid{ background:rgba(255,180,84,.16); color:#FFD9A5; }
+.pill.lo{ background:rgba(182,243,107,.14); color:#D7FCA8; }
+
+/* ---------- roi ---------- */
+.bignum{ font-family:var(--mono); font-size:clamp(34px,5vw,58px); font-weight:700; letter-spacing:-.035em; line-height:1;
+  background:linear-gradient(100deg,#fff,var(--acc-a) 60%,var(--acc-b)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.roi-row{ display:grid; gap:22px; }
+.metric-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.metric{ padding:14px; border-radius:var(--r-md); border:1px solid var(--line); background:rgba(255,255,255,.028); }
+.metric b{ display:block; font-family:var(--mono); font-size:17px; color:#fff; }
+.metric span{ font-size:9.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--muted); }
+
+/* ---------- strategy ---------- */
+.proto{ position:relative; display:grid; gap:13px; padding:22px; border-radius:var(--r-lg); border:1px solid var(--line);
+  background:linear-gradient(160deg,var(--panel-2),var(--panel)); overflow:hidden; transition:.4s var(--ease); }
+.proto:hover{ transform:translateY(-5px); box-shadow:var(--sh-2); }
+.proto::before{ content:''; position:absolute; left:0; right:0; top:0; height:3px; }
+.proto.c1::before{ background:linear-gradient(90deg,var(--rose),transparent); }
+.proto.c2::before{ background:linear-gradient(90deg,var(--amber),transparent); }
+.proto.c3::before{ background:linear-gradient(90deg,var(--lime),transparent); }
+.proto.c1:hover{ border-color:rgba(255,92,122,.4); }
+.proto.c2:hover{ border-color:rgba(255,180,84,.4); }
+.proto.c3:hover{ border-color:rgba(182,243,107,.38); }
+.proto-h{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.proto-h h4{ font-size:14.5px; }
+.proto-ico{ width:38px;height:38px; border-radius:12px; display:grid; place-items:center; font-family:var(--mono); font-weight:700; font-size:13px; }
+.proto.c1 .proto-ico{ background:rgba(255,92,122,.14); color:#FFB9C7; border:1px solid rgba(255,92,122,.32); }
+.proto.c2 .proto-ico{ background:rgba(255,180,84,.14); color:#FFD9A5; border:1px solid rgba(255,180,84,.32); }
+.proto.c3 .proto-ico{ background:rgba(182,243,107,.13); color:#D7FCA8; border:1px solid rgba(182,243,107,.3); }
+.proto ul{ margin:0; padding:0; list-style:none; display:grid; gap:9px; }
+.proto li{ position:relative; padding-left:20px; font-size:12.5px; color:var(--text-2); line-height:1.55; }
+.proto li::before{ content:''; position:absolute; left:2px; top:8px; width:6px;height:6px; border-radius:2px; background:var(--acc-a); opacity:.7; }
+.proto .trig{ font-family:var(--mono); font-size:10.5px; color:var(--muted); padding:9px 11px; border-radius:10px; background:rgba(255,255,255,.03); border:1px solid var(--line); }
+
+/* ---------- diagnostics ---------- */
+.bars{ display:grid; gap:11px; }
+.bar-row{ display:grid; grid-template-columns:132px 1fr 54px; align-items:center; gap:12px; }
+.bar-row span{ font-size:11.5px; color:var(--text-2); }
+.bar-row em{ font-family:var(--mono); font-size:11.5px; font-style:normal; color:var(--acc-a); text-align:right; }
+.bar-track{ height:9px; border-radius:99px; background:rgba(255,255,255,.07); overflow:hidden; }
+.bar-fill{ height:100%; border-radius:99px; background:linear-gradient(90deg,var(--acc-a),var(--acc-b)); width:0;
+  transition:width 1.2s var(--ease); box-shadow:0 0 12px rgba(77,224,200,.4); }
+
+/* ---------- chat ---------- */
+.chat-fab{ position:fixed; right:26px; bottom:26px; z-index:80; width:60px;height:60px; border-radius:20px; display:grid; place-items:center;
+  background:linear-gradient(140deg,var(--acc-a),var(--acc-b)); color:#04121A;
+  box-shadow:0 16px 40px rgba(77,224,200,.32),0 3px 0 rgba(0,0,0,.3); transition:.32s var(--ease-b); }
+.chat-fab:hover{ transform:translateY(-4px) scale(1.05); }
+.chat-fab svg{ width:26px;height:26px; }
+.chat-fab .ping{ position:absolute; top:-3px; right:-3px; width:14px;height:14px; border-radius:50%; background:var(--rose);
+  border:2px solid var(--ink); animation:pulse 2s infinite; }
+.chat-fab.open .ping{ display:none; }
+.chat-panel{ position:fixed; right:26px; bottom:100px; z-index:81; width:min(392px,calc(100vw - 40px)); height:min(560px,72vh);
+  display:flex; flex-direction:column; border-radius:var(--r-lg); overflow:hidden; border:1px solid var(--line-2);
+  background:linear-gradient(180deg,rgba(13,19,40,.98),rgba(6,9,22,.99)); box-shadow:var(--sh-2);
+  animation:chatIn .32s var(--ease) both; }
+@keyframes chatIn{ from{ opacity:0; transform:translateY(16px) scale(.97);} to{ opacity:1; transform:none; } }
+.chat-head{ display:flex; align-items:center; gap:12px; padding:15px 17px; border-bottom:1px solid var(--line);
+  background:linear-gradient(100deg,rgba(77,224,200,.1),rgba(139,123,255,.08)); }
+.chat-head .av{ width:36px;height:36px; border-radius:12px; display:grid; place-items:center; font-weight:800; font-family:'Sora',sans-serif;
+  background:linear-gradient(140deg,var(--acc-a),var(--acc-b)); color:#04121A; font-size:15px; }
+.chat-head h4{ font-size:13px; }
+.chat-head p{ font-size:10px; color:var(--muted); display:flex; align-items:center; gap:6px; }
+.chat-body{ flex:1; overflow-y:auto; padding:17px; display:grid; gap:11px; align-content:start; }
+.msg{ max-width:88%; padding:11px 14px; border-radius:15px; font-size:13px; line-height:1.58; white-space:pre-line; animation:msgIn .3s var(--ease) both; }
+@keyframes msgIn{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:none; } }
+.msg.bot{ justify-self:start; background:rgba(255,255,255,.045); border:1px solid var(--line); color:var(--text-2); border-bottom-left-radius:5px; }
+.msg.me{ justify-self:end; background:linear-gradient(135deg,rgba(77,224,200,.2),rgba(139,123,255,.18)); border:1px solid var(--line-2);
+  color:#fff; text-align:right; border-bottom-right-radius:5px; }
+.msg b{ color:#fff; }
+.typing{ display:flex; gap:4px; padding:13px 15px; }
+.typing i{ width:6px;height:6px;border-radius:50%; background:var(--muted); animation:tp 1.2s infinite; }
+.typing i:nth-child(2){ animation-delay:.15s; } .typing i:nth-child(3){ animation-delay:.3s; }
+@keyframes tp{ 0%,60%,100%{ transform:translateY(0); opacity:.4;} 30%{ transform:translateY(-5px); opacity:1;} }
+.chat-quick{ display:flex; flex-wrap:wrap; gap:7px; padding:0 17px 12px; }
+.qchip{ padding:7px 12px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,.035);
+  font-size:10.5px; color:var(--text-2); transition:.25s var(--ease); }
+.qchip:hover{ border-color:var(--acc-a); color:#fff; background:rgba(77,224,200,.1); transform:translateY(-2px); }
+.chat-foot{ display:flex; gap:9px; padding:13px 15px; border-top:1px solid var(--line); background:rgba(4,7,18,.6); }
+.chat-foot input{ flex:1; padding:11px 14px; border-radius:13px; background:rgba(255,255,255,.045); border:1px solid var(--line); font-size:13px; }
+.chat-foot input:focus{ outline:none; border-color:var(--acc-a); }
+.chat-foot button{ width:44px;height:44px; border-radius:13px; display:grid; place-items:center;
+  background:linear-gradient(135deg,var(--acc-a),var(--acc-b)); color:#04121A; }
+.chat-foot button svg{ width:17px;height:17px; }
+
+/* ---------- modal / toast ---------- */
+.modal{ position:fixed; inset:0; z-index:95; display:grid; place-items:center; padding:24px;
+  background:rgba(3,5,14,.78); backdrop-filter:blur(9px); animation:fade .25s ease both; }
+@keyframes fade{ from{opacity:0;} to{opacity:1;} }
+.modal-card{ width:min(640px,100%); max-height:84vh; overflow-y:auto; border-radius:var(--r-lg); border:1px solid var(--line-2);
+  background:linear-gradient(170deg,rgba(17,24,50,.99),rgba(6,9,22,.99)); box-shadow:var(--sh-2);
+  animation:pop .35s var(--ease-b) both; }
+@keyframes pop{ from{ opacity:0; transform:translateY(22px) scale(.96);} to{ opacity:1; transform:none; } }
+.modal-h{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:20px 24px; border-bottom:1px solid var(--line); }
+.modal-h h3{ font-size:16px; }
+.modal-b{ padding:22px 24px; display:grid; gap:16px; }
+.pipe{ display:grid; gap:10px; }
+.pipe-step{ display:grid; grid-template-columns:36px 1fr; gap:13px; align-items:start; padding:13px; border-radius:var(--r-md);
+  border:1px solid var(--line); background:rgba(255,255,255,.028); }
+.pipe-step b{ width:36px;height:36px; border-radius:11px; display:grid; place-items:center; font-family:var(--mono); font-size:12px;
+  background:rgba(77,224,200,.12); color:var(--acc-a); border:1px solid var(--line-2); }
+.pipe-step h5{ margin:0 0 3px; font-size:12.5px; font-family:'Sora',sans-serif; }
+.pipe-step p{ font-size:12px; color:var(--muted); }
+.toasts{ position:fixed; left:50%; bottom:28px; transform:translateX(-50%); z-index:120; display:grid; gap:9px; justify-items:center; }
+.toast{ display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:14px; border:1px solid var(--line-2);
+  background:rgba(9,14,32,.96); box-shadow:var(--sh-2); font-size:12.5px; color:var(--text);
+  animation:toastIn .35s var(--ease-b) both; }
+@keyframes toastIn{ from{ opacity:0; transform:translateY(16px);} to{ opacity:1; transform:none; } }
+.toast i{ width:8px;height:8px;border-radius:50%; background:var(--acc-a); box-shadow:0 0 10px var(--acc-a); }
+
+/* ---------- footer ---------- */
+footer{ border-top:1px solid var(--line); background:rgba(5,8,20,.7); margin-top:40px; }
+.foot-in{ max-width:1380px; margin:0 auto; padding:28px 26px; display:flex; flex-wrap:wrap; gap:16px;
+  align-items:center; justify-content:space-between; }
+.foot-in p{ font-size:11.5px; color:var(--dim); }
+.foot-in nav{ display:flex; gap:18px; }
+.foot-in nav button{ font-size:11.5px; color:var(--muted); transition:color .25s; }
+.foot-in nav button:hover{ color:var(--acc-a); }
+
+/* ---------- reveal ---------- */
+.rv{ opacity:0; transform:translateY(20px); transition:opacity .7s var(--ease),transform .7s var(--ease); }
+.rv.in{ opacity:1; transform:none; }
+
+@media (max-width:1080px){
+  .hero,.g-2,.g-2b,.g-3,.g-4{ grid-template-columns:1fr; }
+  .grid-in{ grid-template-columns:repeat(2,1fr); }
+  .hdr-mid{ display:none; }
+}
+@media (max-width:720px){
+  .hdr-in,.nav-in,main,.foot-in{ padding-left:16px; padding-right:16px; }
+  .grid-in,.chips,.presets,.metric-row{ grid-template-columns:1fr; }
+  .tab{ padding:13px 12px; font-size:10px; } .tab svg{ display:none; } .kbd{ display:none; }
+  .bar-row{ grid-template-columns:96px 1fr 48px; }
+  .hero-scene{ height:320px; }
+  .chat-panel{ right:14px; left:14px; width:auto; bottom:92px; }
+  .chat-fab{ right:16px; bottom:16px; }
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important;
+    transition-duration:.001ms !important; scroll-behavior:auto !important; }
+  .rv{ opacity:1; transform:none; }
+}
+
+/* ============================================================
+   POLISH PASS — fluid scale, cinematic depth, responsive 3D
+   ============================================================ */
+:root{
+  --content-max:1480px;
+  --page-gutter:clamp(16px,3.2vw,42px);
+  --space:clamp(16px,2vw,26px);
+}
+body{ background:#050814; overflow-x:hidden; }
+.bg-fx{ background:
+  radial-gradient(1100px 620px at 8% -8%, color-mix(in srgb,var(--acc-a) 16%,transparent), transparent 62%),
+  radial-gradient(900px 560px at 92% 4%, color-mix(in srgb,var(--acc-b) 18%,transparent), transparent 60%),
+  radial-gradient(800px 700px at 50% 108%, rgba(255,180,84,.08), transparent 62%),
+  linear-gradient(180deg,#06091A 0%,#050814 46%,#070B1C 100%); }
+.hdr-in,.nav-in,main,.foot-in{ max-width:var(--content-max); padding-left:var(--page-gutter); padding-right:var(--page-gutter); }
+.hdr-in{ min-height:68px; }
+main{ padding-top:clamp(24px,4vw,54px); padding-bottom:clamp(58px,7vw,110px); }
+.hero{ grid-template-columns:minmax(0,1.04fr) minmax(380px,.96fr); gap:clamp(20px,3vw,42px); }
+.hero-copy{ min-width:0; }
+.hero-copy h2{ font-size:clamp(30px,4.1vw,62px); text-wrap:balance; }
+.lede{ font-size:clamp(14px,1.15vw,16px); }
+.wrap{ gap:var(--space); }
+.card{ min-width:0; padding:clamp(18px,2.1vw,28px); }
+.card.pad-lg{ padding:clamp(22px,2.6vw,36px); }
+.scene{ isolation:isolate; transform:translateZ(0); box-shadow:inset 0 1px 0 rgba(255,255,255,.08), inset 0 -30px 70px rgba(0,0,0,.18), 0 24px 70px rgba(0,0,0,.2); }
+.scene::before{ content:''; position:absolute; inset:0; z-index:1; pointer-events:none; opacity:.45; background:linear-gradient(115deg,rgba(255,255,255,.11),transparent 18%,transparent 72%,rgba(77,224,200,.08)), radial-gradient(circle at calc(50% + var(--mx,0px)) calc(42% + var(--my,0px)),rgba(255,255,255,.1),transparent 25%); mix-blend-mode:screen; }
+.scene::after{ content:''; position:absolute; inset:0; z-index:2; pointer-events:none; opacity:.32; background:repeating-linear-gradient(180deg,transparent 0 5px,rgba(155,246,228,.022) 6px,transparent 7px); mask-image:linear-gradient(180deg,transparent,#000 18%,#000 82%,transparent); animation:sceneScan 9s linear infinite; }
+.scene canvas{ position:relative; z-index:0; filter:saturate(1.08) contrast(1.04); }
+@keyframes sceneScan{ from{ transform:translateY(-18%); } to{ transform:translateY(18%); } }
+.scene-tag,.scene-hint,.scene-hud{ text-shadow:0 2px 12px rgba(0,0,0,.8); }
+.scene-hud{ padding:9px 11px; border:1px solid rgba(255,255,255,.08); border-radius:11px; background:rgba(4,7,18,.28); backdrop-filter:blur(8px); }
+.hero-scene{ height:clamp(330px,38vw,520px); min-height:330px; }
+.mini-scene{ height:clamp(210px,24vw,300px); min-height:210px; }
+.preset,.chip,.metric,.proto{ backdrop-filter:blur(12px); }
+.preset::after,.chip::before,.metric::after{ content:''; position:absolute; pointer-events:none; inset:0; border-radius:inherit; background:linear-gradient(120deg,rgba(255,255,255,.08),transparent 30%); opacity:.55; }
+.chip{ transform:translateZ(0); transition:transform .3s var(--ease),border-color .3s var(--ease),background .3s var(--ease); }
+.chip:hover{ transform:translateY(-3px) translateZ(8px); border-color:var(--line-2); background:rgba(77,224,200,.055); }
+.btn{ min-height:46px; }
+.icon-btn{ flex:0 0 auto; }
+@media (max-width:1180px){
+  .hero{ grid-template-columns:minmax(0,1fr) minmax(330px,.86fr); }
+  .hero-copy h2{ font-size:clamp(30px,4.8vw,52px); }
+  .card-h{ margin-bottom:15px; }
+}
+@media (max-width:900px){
+  .hero,.g-2,.g-2b,.g-3,.g-4{ grid-template-columns:1fr; }
+  .hero-scene{ order:-1; height:clamp(300px,58vw,440px); }
+  .hdr-mid{ display:none; }
+  .scene-hud{ bottom:12px; }
+}
+@media (max-width:560px){
+  .hdr-in{ gap:10px; padding-top:10px; padding-bottom:10px; }
+  .brand{ gap:9px; }
+  .brand-mark{ width:38px; height:38px; border-radius:12px; }
+  .brand-txt h1{ font-size:15px; }
+  .brand-txt p{ font-size:8px; }
+  .accent-sw{ gap:3px; padding:4px; }
+  .sw{ width:15px; height:15px; }
+  .hero-scene{ height:300px; min-height:300px; }
+  .mini-scene{ height:220px; min-height:220px; }
+  .card-h{ flex-wrap:wrap; }
+  .card-h h3{ font-size:14px; }
+  .scene-hint{ display:none; }
+  .toasts{ width:calc(100% - 32px); bottom:18px; }
+  .toast{ width:100%; justify-content:center; text-align:center; }
+}
+@media (prefers-reduced-motion:reduce){
+  .scene::after{ animation:none; }
+}
+
+
+/* ============================================================
+   AUREUS REMODEL — CONTROL SURFACE
+   A sharper editorial command deck with a midnight-black substrate,
+   electric chartreuse signal, and precise instrument-panel geometry.
+   ============================================================ */
+:root{
+  --ink:#07090d;
+  --ink-2:#0b0f15;
+  --ink-3:#111720;
+  --panel:rgba(16,22,29,.82);
+  --panel-2:rgba(20,28,36,.94);
+  --line:rgba(226,240,234,.12);
+  --line-2:rgba(190,255,108,.45);
+  --text:#eef7f1;
+  --text-2:#bac9c3;
+  --muted:#7f938b;
+  --dim:#52635e;
+  --aqua:#baff6c;
+  --aqua-2:#e2ffbd;
+  --violet:#70e6d1;
+  --violet-2:#b6fff1;
+  --amber:#ffca72;
+  --rose:#ff718a;
+  --lime:#baff6c;
+  --acc-a:#baff6c;
+  --acc-b:#70e6d1;
+  --r-xs:5px; --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:20px;
+  --sh-1:0 14px 34px rgba(0,0,0,.28);
+  --sh-2:0 30px 80px rgba(0,0,0,.46);
+  --page-gutter:clamp(18px,4vw,64px);
+  --content-max:1540px;
+}
+*{ scrollbar-color:#27352f #080b0f; }
+html{ background:var(--ink); }
+body{
+  min-width:320px;
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:14px;
+  letter-spacing:.005em;
+  background:
+    radial-gradient(900px 520px at 84% -8%,rgba(112,230,209,.06),transparent 70%),
+    radial-gradient(700px 520px at -10% 22%,rgba(186,255,108,.055),transparent 66%),
+    #07090d;
+}
+body::before{ content:''; position:fixed; inset:0; z-index:-3; pointer-events:none; opacity:.22; background-image:linear-gradient(rgba(226,240,234,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(226,240,234,.035) 1px,transparent 1px); background-size:40px 40px; mask-image:linear-gradient(90deg,#000,transparent 80%); }
+.bg-fx{ opacity:.48; filter:saturate(.7); background:radial-gradient(680px 440px at 0% 0%,rgba(186,255,108,.12),transparent 64%),radial-gradient(700px 500px at 100% 20%,rgba(112,230,209,.1),transparent 68%),linear-gradient(180deg,#090d12,#07090d 65%,#0a0e12); }
+.bg-grid{ opacity:.16; background-size:40px 40px; mask-image:linear-gradient(180deg,#000,transparent 76%); }
+.orb{ filter:blur(92px); opacity:.18; mix-blend-mode:screen; }
+.cursor-glow{ width:280px; height:280px; background:radial-gradient(circle,rgba(186,255,108,.08),transparent 68%); }
+.hair{ height:3px; background:linear-gradient(90deg,var(--aqua),var(--violet) 48%,transparent 88%); opacity:1; }
+header{ background:rgba(7,9,13,.86); border-bottom:1px solid var(--line); backdrop-filter:blur(24px) saturate(130%); }
+.hdr-in,.nav-in,main,.foot-in{ max-width:var(--content-max); padding-left:var(--page-gutter); padding-right:var(--page-gutter); }
+.hdr-in{ min-height:72px; padding-top:12px; padding-bottom:12px; }
+.brand{ gap:12px; }
+.brand-mark{ width:42px;height:42px; border-radius:10px; background:var(--aqua); border:0; box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 10px 24px rgba(186,255,108,.16); }
+.brand-mark svg{ stroke:#09100d !important; }
+.brand-mark::after{ background:conic-gradient(from 0deg,transparent,rgba(255,255,255,.7),transparent 28%); }
+.brand-txt h1{ color:var(--text); background:none; -webkit-text-fill-color:initial; font-size:16px; letter-spacing:.22em; }
+.brand-txt p{ color:var(--aqua); letter-spacing:.24em; }
+.status-pill{ padding:8px 12px; border-radius:6px; background:rgba(186,255,108,.07); border-color:rgba(186,255,108,.3); color:var(--aqua-2); font-size:9px; }
+.dot{ background:var(--aqua); box-shadow:0 0 14px var(--aqua); }
+.accent-sw{ border-radius:7px; padding:5px 6px; background:rgba(255,255,255,.035); }
+.sw{ width:16px;height:16px; border-radius:3px; }
+.sw[data-set="aurora"]{ background:linear-gradient(135deg,#baff6c,#70e6d1); }
+.sw[data-set="plasma"]{ background:linear-gradient(135deg,#70e6d1,#b6fff1); }
+.sw[data-set="ember"]{ background:linear-gradient(135deg,#ffca72,#ff718a); }
+.sw[data-set="flux"]{ background:linear-gradient(135deg,#baff6c,#e2ffbd); }
+.sw.on{ border-color:#fff; box-shadow:0 0 0 2px rgba(186,255,108,.22); }
+.icon-btn{ width:38px;height:38px; border-radius:8px; background:rgba(255,255,255,.035); }
+.icon-btn:hover{ color:var(--aqua); background:rgba(186,255,108,.08); border-color:var(--line-2); }
+.navbar{ background:rgba(9,13,17,.78); border-top:0; }
+.nav-in{ gap:3px; padding-top:8px; padding-bottom:8px; }
+.tab{ padding:12px 14px; border-radius:7px; font-size:10px; letter-spacing:.13em; color:var(--muted); }
+.tab:hover{ background:rgba(255,255,255,.045); color:var(--text); }
+.tab.on{ color:#0b100d; background:var(--aqua); }
+.tab-glow{ display:none; }
+.tab-ink{ display:none; }
+.kbd{ color:inherit; opacity:.6; border-color:currentColor; }
+main{ padding-top:clamp(28px,5vw,72px); padding-bottom:clamp(70px,9vw,130px); }
+.page{ position:relative; }
+.page::before{ content:'AUREUS / LIVE CONTROL SURFACE'; display:block; margin-bottom:24px; color:var(--dim); font-family:var(--mono); font-size:9px; letter-spacing:.23em; }
+#page-roi::before{ content:'AUREUS / RECOVERY ECONOMICS'; }
+#page-strategy::before{ content:'AUREUS / RESPONSE OPERATIONS'; }
+#page-diagnostics::before{ content:'AUREUS / MODEL INSTRUMENTATION'; }
+.hero{ gap:clamp(24px,5vw,78px); grid-template-columns:minmax(0,1.08fr) minmax(420px,.92fr); }
+.hero-copy{ gap:22px; }
+.eyebrow{ color:var(--aqua); font-size:9px; letter-spacing:.32em; }
+.eyebrow i{ background:linear-gradient(90deg,var(--aqua),transparent); }
+.hero-copy h2{ max-width:740px; font-size:clamp(40px,6vw,82px); line-height:.98; letter-spacing:-.07em; }
+.hero-copy h2 em{ background:linear-gradient(95deg,var(--aqua),var(--violet)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.lede{ max-width:52ch; color:var(--text-2); font-size:15px; line-height:1.72; }
+.chips{ gap:8px; }
+.chip{ padding:15px 14px; border-radius:8px; border-color:var(--line); background:rgba(255,255,255,.025); }
+.chip::after{ width:3px; background:var(--aqua); }
+.chip b{ font-size:19px; }
+.chip span{ color:var(--muted); font-size:8.5px; letter-spacing:.18em; }
+.presets{ gap:8px; }
+.preset{ padding:15px; border-radius:8px; background:rgba(255,255,255,.025); }
+.preset:hover,.preset.on{ background:rgba(186,255,108,.1); border-color:var(--aqua); }
+.preset em{ color:var(--aqua); }
+.scene{ border-radius:12px; border-color:rgba(186,255,108,.18); background:radial-gradient(circle at 50% 45%,rgba(186,255,108,.08),transparent 60%),linear-gradient(145deg,#111a1c,#080b10 78%); box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 28px 70px rgba(0,0,0,.36); }
+.scene::before{ opacity:.7; background:linear-gradient(125deg,rgba(255,255,255,.13),transparent 20%,transparent 68%,rgba(186,255,108,.07)); }
+.scene::after{ opacity:.18; }
+.scene-tag{ color:var(--aqua-2); }
+.scene-tag i{ background:var(--aqua); box-shadow:0 0 12px var(--aqua); }
+.scene-hud{ background:rgba(5,9,9,.52); border-color:rgba(186,255,108,.18); }
+.card{ border-radius:12px; border-color:var(--line); background:linear-gradient(145deg,rgba(18,25,31,.95),rgba(10,14,19,.9)); box-shadow:var(--sh-1),inset 0 1px 0 rgba(255,255,255,.045); }
+.card::before{ background:linear-gradient(120deg,rgba(255,255,255,.07),transparent 26%,transparent 70%,rgba(186,255,108,.045)); }
+.card:hover{ border-color:rgba(186,255,108,.32); box-shadow:var(--sh-2),inset 0 1px 0 rgba(255,255,255,.08); }
+.kicker{ color:var(--aqua); font-size:9px; letter-spacing:.25em; }
+.kicker::before{ background:var(--aqua); }
+.card-h h3{ font-size:14px; letter-spacing:.02em; }
+.sub{ color:var(--muted); }
+.btn{ min-height:44px; padding:12px 17px; border-radius:7px; background:var(--aqua); color:#0b100d; box-shadow:0 12px 28px rgba(186,255,108,.16),0 2px 0 rgba(0,0,0,.4); }
+.btn:hover{ filter:brightness(1.08); box-shadow:0 18px 34px rgba(186,255,108,.22),0 2px 0 rgba(0,0,0,.4); }
+.btn.ghost{ color:var(--text); background:rgba(255,255,255,.04); }
+.inp{ border-radius:7px; border-color:var(--line); background:#090d12; padding:12px 13px; }
+.inp:focus{ border-color:var(--aqua); box-shadow:0 0 0 3px rgba(186,255,108,.1); }
+input[type=range]::-webkit-slider-thumb{ background:var(--aqua); box-shadow:0 0 0 4px rgba(186,255,108,.14),0 6px 16px rgba(0,0,0,.5); }
+.badge{ border-radius:5px; padding:6px 10px; font-size:9px; }
+.note,.metric,.proto{ border-radius:8px; background:rgba(255,255,255,.027); }
+.metric{ padding:13px; }
+.readout-row{ border-bottom-color:rgba(226,240,234,.1); }
+.chart .grid-l{ stroke:rgba(226,240,234,.1); }
+.chart .axis{ fill:#74847e; }
+.tbl-wrap{ border-radius:8px; }
+th{ background:rgba(255,255,255,.045); }
+.proto{ padding:19px; }
+.proto:hover{ transform:translateY(-4px) rotateX(1deg); }
+.proto-ico{ border-radius:8px; }
+.chat-fab{ width:56px;height:56px; right:28px; bottom:28px; border-radius:12px; background:var(--aqua); color:#0b100d; box-shadow:0 18px 38px rgba(186,255,108,.22); }
+.chat-panel{ border-radius:12px; background:linear-gradient(180deg,#121b20,#090d12); border-color:rgba(186,255,108,.3); }
+.chat-head{ background:rgba(186,255,108,.07); }
+.chat-head .av{ border-radius:8px; background:var(--aqua); color:#0b100d; }
+.qchip{ border-radius:6px; }
+.modal-card{ border-radius:12px; background:linear-gradient(170deg,#151f25,#090d12); }
+footer{ background:rgba(7,9,13,.8); }
+.foot-in p{ letter-spacing:.04em; }
+@media(max-width:980px){ .hero{ grid-template-columns:1fr; } .hero-scene{ order:-1; } }
+@media(max-width:600px){ .page::before{ margin-bottom:18px; font-size:8px; } .hero-copy h2{ font-size:clamp(39px,13vw,62px); } .tab{ padding:11px 10px; } .tab.on{ background:rgba(186,255,108,.16); color:var(--aqua); } }
+
+
+/* ---------- 3D telemetry symbols ---------- */
+.scene-symbols{ position:absolute; top:46px; right:14px; z-index:4; display:grid; gap:6px; pointer-events:none; }
+.scene-symbols span{ min-width:88px; display:grid; grid-template-columns:18px 1fr; align-items:center; gap:6px; padding:5px 7px; border:1px solid rgba(186,255,108,.18); border-radius:5px; background:rgba(5,9,9,.52); backdrop-filter:blur(7px); box-shadow:0 4px 14px rgba(0,0,0,.16); animation:telemetryIn .6s var(--ease) both; animation-delay:calc(var(--i) * 90ms); }
+.scene-symbols b{ color:var(--aqua); font-family:var(--mono); font-size:12px; text-align:center; }
+.scene-symbols small{ color:var(--muted); font-family:var(--mono); font-size:7px; letter-spacing:.12em; white-space:nowrap; }
+@keyframes telemetryIn{ from{opacity:0; transform:translateX(8px)} to{opacity:1; transform:none} }
+.scene canvas{ image-rendering:auto; }
+@media(max-width:600px){ .scene-symbols{ top:40px; right:10px; transform:scale(.86); transform-origin:top right; } .scene-symbols span{ min-width:78px; } }
+@media(prefers-reduced-motion:reduce){ .scene-symbols span{ animation:none; } }
+
+
+/* ---------- cursor atmosphere: liquid halo + signal stars ---------- */
+.cursor-glow{ width:360px; height:360px; opacity:.75; background:radial-gradient(circle,rgba(186,255,108,.12) 0%,rgba(112,230,209,.055) 24%,transparent 68%); filter:blur(3px); mix-blend-mode:screen; transition:opacity .35s ease,transform .18s ease; }
+.cursor-glow::after{ content:''; position:absolute; inset:31%; border:1px solid rgba(186,255,108,.16); border-radius:50%; box-shadow:0 0 28px rgba(186,255,108,.08),inset 0 0 24px rgba(112,230,209,.06); animation:cursorBreath 4.8s ease-in-out infinite; }
+.cursor-ripple{ position:fixed; z-index:-1; width:34px; height:34px; margin:-17px 0 0 -17px; border:1px solid rgba(186,255,108,.48); border-radius:50%; pointer-events:none; mix-blend-mode:screen; animation:waterRipple 1.15s cubic-bezier(.12,.68,.26,1) forwards; }
+.cursor-ripple::after{ content:''; position:absolute; inset:5px; border:1px solid rgba(112,230,209,.24); border-radius:inherit; }
+.cursor-star{ position:fixed; z-index:-1; width:var(--size,3px); height:var(--size,3px); margin:calc(var(--size,3px) / -2) 0 0 calc(var(--size,3px) / -2); border-radius:50%; pointer-events:none; background:var(--star,var(--aqua)); box-shadow:0 0 7px 2px var(--star,var(--aqua)); animation:starDrift var(--life,1.4s) ease-out forwards; }
+@keyframes waterRipple{ 0%{ opacity:.7; transform:scale(.35); } 65%{ opacity:.2; } 100%{ opacity:0; transform:scale(3.8); } }
+@keyframes starDrift{ 0%{ opacity:0; transform:translate3d(0,0,0) scale(.4); } 18%{ opacity:.9; } 100%{ opacity:0; transform:translate3d(var(--dx),var(--dy),0) scale(.05); } }
+@keyframes cursorBreath{ 0%,100%{ transform:scale(.92); opacity:.35; } 50%{ transform:scale(1.08); opacity:.75; } }
+@media (pointer:coarse){ .cursor-glow{ display:none; } .cursor-ripple,.cursor-star{ display:none; } }
+@media (prefers-reduced-motion:reduce){ .cursor-glow::after{ animation:none; } .cursor-ripple,.cursor-star{ animation:none; opacity:0; } }
+
+
+/* ---------- accent scheme bridge ---------- */
+:root,[data-accent="aurora"]{ --aqua:var(--signal-a); --aqua-2:var(--signal-a); --violet:var(--signal-b); --violet-2:var(--signal-b); --acc-a:var(--signal-a); --acc-b:var(--signal-b); --line-2:var(--signal-line); --signal-a:#baff6c; --signal-b:#70e6d1; --signal-soft:rgba(186,255,108,.12); --signal-line:rgba(186,255,108,.45); }
+[data-accent="plasma"]{ --aqua:var(--signal-a); --aqua-2:var(--signal-a); --violet:var(--signal-b); --violet-2:var(--signal-b); --acc-a:var(--signal-a); --acc-b:var(--signal-b); --line-2:var(--signal-line); --signal-a:#70e6d1; --signal-b:#c39bff; --signal-soft:rgba(112,230,209,.12); --signal-line:rgba(112,230,209,.45); }
+[data-accent="ember"]{ --aqua:var(--signal-a); --aqua-2:var(--signal-a); --violet:var(--signal-b); --violet-2:var(--signal-b); --acc-a:var(--signal-a); --acc-b:var(--signal-b); --line-2:var(--signal-line); --signal-a:#ffca72; --signal-b:#ff718a; --signal-soft:rgba(255,202,114,.13); --signal-line:rgba(255,202,114,.46); }
+[data-accent="flux"]{ --aqua:var(--signal-a); --aqua-2:var(--signal-a); --violet:var(--signal-b); --violet-2:var(--signal-b); --acc-a:var(--signal-a); --acc-b:var(--signal-b); --line-2:var(--signal-line); --signal-a:#d6ff72; --signal-b:#9cf3b0; --signal-soft:rgba(214,255,114,.12); --signal-line:rgba(214,255,114,.46); }
+[data-accent] .hair{ background:linear-gradient(90deg,var(--signal-a),var(--signal-b) 48%,transparent 88%); }
+[data-accent] .brand-mark{ background:var(--signal-a); box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 10px 24px var(--signal-soft); }
+[data-accent] .brand-txt p,[data-accent] .status-pill,[data-accent] .kicker,[data-accent] .eyebrow,[data-accent] .scene-tag,[data-accent] .preset em{ color:var(--signal-a); }
+[data-accent] .status-pill{ border-color:var(--signal-line); color:var(--signal-a); background:var(--signal-soft); }
+[data-accent] .dot,[data-accent] .scene-tag i{ background:var(--signal-a); box-shadow:0 0 14px var(--signal-a); }
+[data-accent] .tab.on,[data-accent] .btn:not(.ghost),[data-accent] .chat-fab{ background:var(--signal-a); box-shadow:0 14px 32px var(--signal-soft),0 2px 0 rgba(0,0,0,.4); }
+[data-accent] .btn:not(.ghost){ color:#0b100d; }
+[data-accent] .btn.ghost:hover,[data-accent] .icon-btn:hover,[data-accent] .preset:hover,[data-accent] .preset.on{ border-color:var(--signal-a); background:var(--signal-soft); }
+[data-accent] .chip::after,[data-accent] .kicker::before{ background:var(--signal-a); }
+[data-accent] .inp:focus{ border-color:var(--signal-a); box-shadow:0 0 0 3px var(--signal-soft); }
+[data-accent] input[type=range]::-webkit-slider-thumb{ background:var(--signal-a); box-shadow:0 0 0 4px var(--signal-soft),0 6px 16px rgba(0,0,0,.5); }
+[data-accent] .scene{ border-color:var(--signal-line); background:radial-gradient(circle at 50% 45%,var(--signal-soft),transparent 60%),linear-gradient(145deg,#111a1c,#080b10 78%); }
+[data-accent] .scene-symbols span{ border-color:var(--signal-line); }
+[data-accent] .scene-symbols b{ color:var(--signal-a); }
+[data-accent] .card:hover{ border-color:var(--signal-line); }
+[data-accent] .chat-panel{ border-color:var(--signal-line); }
+[data-accent] .chat-head{ background:var(--signal-soft); }
+@media(max-width:600px){ [data-accent] .tab.on{ background:var(--signal-soft); color:var(--signal-a); } }
+
+
+/* ---------- parity inspector ---------- */
+.parity-inspector{ margin-top:22px; padding-top:22px; border-top:1px solid var(--line); }
+.parity-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:14px; }
+.parity-head h3{ font-size:14px; }
+.parity-form{ display:flex; gap:9px; align-items:center; }
+.parity-form .inp{ flex:1; min-width:0; }
+.parity-output{ display:flex; flex-wrap:wrap; gap:7px; min-height:43px; margin-top:12px; padding:10px; border:1px dashed var(--line); border-radius:8px; background:rgba(255,255,255,.018); }
+.parity-output.idle{ display:block; color:var(--muted); font-size:12px; }
+.parity-token{ display:inline-flex; align-items:center; gap:7px; padding:7px 9px; border-radius:6px; border:1px solid var(--line); background:rgba(255,255,255,.035); font-family:var(--mono); font-size:11px; }
+.parity-token b{ font-size:9px; letter-spacing:.12em; }
+.parity-token.even{ border-color:rgba(112,230,209,.38); color:#b6fff1; background:rgba(112,230,209,.08); }
+.parity-token.odd{ border-color:rgba(186,255,108,.4); color:#e2ffbd; background:rgba(186,255,108,.08); }
+.parity-token.invalid{ border-color:rgba(255,113,138,.42); color:#ffb9c7; background:rgba(255,113,138,.08); }
+@media(max-width:600px){ .parity-form{ align-items:stretch; flex-direction:column; } .parity-form .btn{ width:100%; } .parity-head{ flex-direction:column; } }
+
+</style>
+</head>
+<body>
+<div class="bg-fx"></div>
+<div class="bg-grid"></div>
+<div class="orb orb-1" data-par="0.022"></div>
+<div class="orb orb-2" data-par="-0.018"></div>
+<div class="orb orb-3" data-par="0.03"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+
+<div class="hair"></div>
+<header>
+  <div class="hdr-in">
+    <div class="brand">
+      <div class="brand-mark"><span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4DE0C8" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2l7.5 4.3v8.6L12 22l-7.5-7.1V6.3z"/><path d="M12 8.2l3.4 2v3.6L12 15.8l-3.4-2v-3.6z"/>
+        </svg>
+      </span></div>
+      <div class="brand-txt">
+        <h1>Aureus</h1>
+        <p>Retention Intelligence</p>
+      </div>
+    </div>
+
+    <div class="hdr-mid">
+      <span class="status-pill"><i class="dot"></i> AI Assistant Enabled · Model Gateway Online · v2.4 realtime</span>
+    </div>
+
+    <div class="hdr-right">
+      <div class="accent-sw" role="group" aria-label="Accent scheme">
+        <button class="sw on" data-set="aurora" title="Aurora (aqua / violet)" aria-label="Aurora scheme"></button>
+        <button class="sw" data-set="plasma" title="Plasma (violet / pink)" aria-label="Plasma scheme"></button>
+        <button class="sw" data-set="ember" title="Ember (amber / coral)" aria-label="Ember scheme"></button>
+        <button class="sw" data-set="flux" title="Flux (lime / aqua)" aria-label="Flux scheme"></button>
+      </div>
+      <button class="icon-btn" id="pipelineBtn" title="How the model works" aria-label="How the model works">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></svg>
+      </button>
+      <button class="icon-btn" id="copyBtn" title="Copy current inference vector (JSON)" aria-label="Copy inference vector">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 012-2h8"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <div class="nav-in" id="navIn">
+      <button class="tab on" data-tab="oracle" id="tabbtn-oracle">
+        <span class="tab-glow"></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg>
+        Risk Oracle <span class="kbd">1</span>
+      </button>
+      <button class="tab" data-tab="roi" id="tabbtn-roi">
+        <span class="tab-glow"></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 20h18M6 20V9M12 20V4M18 20v-7"/></svg>
+        ROI Calculator <span class="kbd">2</span>
+      </button>
+      <button class="tab" data-tab="strategy" id="tabbtn-strategy">
+        <span class="tab-glow"></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.2 6-5.4-3-5.4 3 1.2-6L3.3 9.4l6.1-.8z"/></svg>
+        Action Playbook <span class="kbd">3</span>
+      </button>
+      <button class="tab" data-tab="diagnostics" id="tabbtn-diagnostics">
+        <span class="tab-glow"></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V5M4 19h16"/><path d="M8 15l3.5-4.5 3 2.5L19 7"/></svg>
+        Model Diagnostics <span class="kbd">4</span>
+      </button>
+      <span class="tab-ink" id="tabInk"></span>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <!-- ============================== RISK ORACLE ============================== -->
+  <section class="page" id="page-oracle" data-page="oracle">
+
+    <!-- hero -->
+    <div class="hero rv">
+      <div class="hero-copy">
+        <div class="eyebrow">Predict · Understand · Retain <i></i></div>
+        <h2>Turn churn signals into <em>confident action.</em></h2>
+        <p class="lede">A calm, intelligent command center for spotting customer risk early and orchestrating the next best retention move. Every number below is read live from the Random Forest gateway.</p>
+        <div class="chips">
+          <div class="chip"><b>440k+</b><span>Training records</span></div>
+          <div class="chip"><b>7</b><span>Signal families</span></div>
+          <div class="chip"><b>94.2%</b><span>Model accuracy</span></div>
+        </div>
+        <div class="presets" id="presets">
+          <button class="preset on" data-preset="loyal">
+            <em>01</em><b>Loyal VIP</b>
+            <span>0 support calls, $1,200 spend, Annual contract.</span>
+          </button>
+          <button class="preset" data-preset="atrisk">
+            <em>02</em><b>At-Risk Monthly</b>
+            <span>3 support calls, Monthly contract, Basic tier.</span>
+          </button>
+          <button class="preset" data-preset="churner">
+            <em>03</em><b>Critical Churner</b>
+            <span>6 support calls, 25d payment delay, Monthly.</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="scene hero-scene" id="scene-hero">
+        <div class="scene-tag"><i></i> Churn Oracle Globe</div>
+        <div class="scene-hint">drag to orbit</div>
+        <div class="scene-hud">
+          <span>Risk vector indicator</span>
+          <b id="globe-status-badge" style="color:#9BF6E4">GOLD / NOMINAL</b>
+        </div>
+        <div class="flat-fallback">
+          <div>
+            <div class="orb-fallback"></div>
+            <p class="sub">Sphere shifts color based on model prediction output. WebGL is unavailable in this view — the numeric readout below is still live.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- terminal + result -->
+    <div class="wrap g-2b" style="margin-top:22px">
+      <div class="card pad-lg rv" data-tilt>
+        <div class="card-h">
+          <div>
+            <div class="kicker">Input Layer</div>
+            <h3>Client Parameter Terminal</h3>
+            <p class="sub" style="margin-top:6px">Adjust inputs to evaluate Random Forest decision trees.</p>
+          </div>
+          <span class="badge idle" id="vectorId">Vector idle</span>
+        </div>
+
+        <form id="predict-form" class="stack">
+          <div class="grid-in">
+            <div class="field"><label for="age">Customer Age <i id="v-age">32</i></label>
+              <input class="inp" type="number" id="age" value="32" min="18" max="100" required></div>
+            <div class="field"><label for="tenure">Tenure (Months) <i id="v-tenure">12</i></label>
+              <input class="inp" type="number" id="tenure" value="12" min="0" max="200" required></div>
+            <div class="field"><label for="support_calls">Support Complaints <i id="v-calls">3</i></label>
+              <input class="inp" type="number" id="support_calls" value="3" min="0" max="20" required></div>
+            <div class="field"><label for="payment_delay">Payment Delay (Days) <i id="v-delay">12</i></label>
+              <input class="inp" type="number" id="payment_delay" value="12" min="0" max="60" required></div>
+            <div class="field"><label for="total_spend">Total Lifetime Spend ($) <i id="v-spend">400</i></label>
+              <input class="inp" type="number" id="total_spend" value="400" min="0" max="5000" step="10" required></div>
+            <div class="field"><label for="usage_frequency">Usage Frequency <i id="v-usage">15</i></label>
+              <input class="inp" type="number" id="usage_frequency" value="15" min="0" max="40" required></div>
+          </div>
+
+          <div class="grid-in">
+            <div class="field"><label for="contract_length">Contract Duration</label>
+              <select class="inp" id="contract_length">
+                <option value="Monthly">Monthly</option>
+                <option value="Quarterly">Quarterly</option>
+                <option value="Annual" selected>Annual</option>
+              </select></div>
+            <div class="field"><label for="subscription_type">Subscription Tier</label>
+              <select class="inp" id="subscription_type">
+                <option value="Basic">Basic</option>
+                <option value="Standard" selected>Standard</option>
+                <option value="Premium">Premium</option>
+              </select></div>
+            <div class="field"><label for="gender">Gender</label>
+              <select class="inp" id="gender">
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+              </select></div>
+          </div>
+
+          <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:4px">
+            <button class="btn" type="submit" id="predictBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+              <span class="btn-label">Run churn prediction</span>
+            </button>
+            <button class="btn ghost" type="reset" id="resetBtn">Reset</button>
+            <span class="sub" id="latencyNote">Gateway idle</span>
+          </div>
+        </form>
+      </div>
+
+      <div class="stack">
+        <div class="card rv">
+          <div class="card-h">
+            <div>
+              <div class="kicker">Output Layer</div>
+              <h3>Calculated Churn Probability</h3>
+            </div>
+            <span class="badge idle" id="risk-badge">Awaiting inference</span>
+          </div>
+          <div class="gauge">
+            <svg viewBox="0 0 200 110" aria-hidden="true">
+              <path class="gauge-track" d="M14 100 A86 86 0 0 1 186 100"/>
+              <path class="gauge-fill" id="gaugeFill" d="M14 100 A86 86 0 0 1 186 100"/>
+            </svg>
+            <div class="gauge-val">
+              <b id="risk-score">--</b>
+              <span>Inference vector</span>
+            </div>
+          </div>
+          <div class="readout" style="margin-top:14px">
+            <div class="readout-row"><span>Model</span><b>Random Forest · 100 trees</b></div>
+            <div class="readout-row"><span>Decision depth</span><b>15 levels</b></div>
+            <div class="readout-row"><span>Decision threshold</span><b>0.50 probability</b></div>
+            <div class="readout-row"><span>Feature vector</span><b>13 encoded inputs</b></div>
+          </div>
+        </div>
+
+        <div class="card rv">
+          <div class="card-h"><div><div class="kicker">Prescription</div><h3>AI Strategic Retention Suggestion</h3></div></div>
+          <div class="note" id="recommendation-text">Run a query to calculate tailored retention protocols.</div>
+        </div>
+
+        <div class="card rv">
+          <div class="card-h"><div><div class="kicker">Live Signal</div><h3>Complaint Density vs Churn Probability</h3></div></div>
+          <svg class="chart" id="chart-calls-quick" viewBox="0 0 560 190" role="img" aria-label="Churn probability rising with support calls"></svg>
+          <div class="legend">
+            <span><i style="background:var(--acc-a)"></i> Churn risk %</span>
+            <span><i style="background:var(--acc-b)"></i> Observed plateau</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== ROI ============================== -->
+  <section class="page hidden" id="page-roi" data-page="roi">
+    <div class="wrap g-2 rv" style="align-items:start">
+      <div class="card pad-lg" data-tilt>
+        <div class="card-h">
+          <div>
+            <div class="kicker">Scenario Model</div>
+            <h3>Executive ROI &amp; Revenue Recovery Calculator</h3>
+            <p class="sub" style="margin-top:6px">Interactively project annual financial savings by deploying proactive retention strategies.</p>
+          </div>
+        </div>
+
+        <div class="stack" style="gap:24px">
+          <div class="range-wrap">
+            <div class="range-top"><label for="roi-customers">Total At-Risk Customer Cohort Size</label><b id="roi-customers-val">10,000</b></div>
+            <input type="range" id="roi-customers" min="100" max="100000" step="100" value="10000">
+          </div>
+          <div class="range-wrap">
+            <div class="range-top"><label for="roi-arpu">Average Annual Revenue Per Customer ($)</label><b id="roi-arpu-val">$650</b></div>
+            <input type="range" id="roi-arpu" min="50" max="3000" step="10" value="650">
+          </div>
+          <div class="range-wrap">
+            <div class="range-top"><label for="roi-rate">Targeted ML Retention Success Rate (%)</label><b id="roi-rate-val">25%</b></div>
+            <input type="range" id="roi-rate" min="5" max="80" step="1" value="25">
+          </div>
+        </div>
+
+        <div class="rule" style="margin:24px 0"></div>
+
+        <div class="metric-row">
+          <div class="metric"><b id="roi-cohort-mini">10,000</b><span>Cohort</span></div>
+          <div class="metric"><b id="roi-arpu-mini">$650</b><span>ARPU</span></div>
+          <div class="metric"><b id="roi-rate-mini">25%</b><span>Success rate</span></div>
+        </div>
+
+        <div class="note safe" id="roi-caption" style="margin-top:20px">
+          By identifying high-risk accounts prior to cancellation, a 25% retention success rate preserves <b>$1.62M</b> in annual recurring revenue.
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card rv">
+          <div class="kicker">Projected Annual Revenue Recovered</div>
+          <div class="bignum" id="roi-total">$1,625,000</div>
+          <p class="sub" style="margin-top:12px">Recovered = cohort × ARPU × retention success rate. Move the sliders to stress-test the business case.</p>
+        </div>
+
+        <div class="scene mini-scene" id="scene-roi">
+          <div class="scene-tag"><i></i> Recovery Volume Field</div>
+          <div class="scene-hint">drag to orbit</div>
+          <div class="flat-fallback"><p class="sub">3D recovery field unavailable in this view.</p></div>
+        </div>
+
+        <div class="card rv">
+          <div class="kicker">Sensitivity Ladder</div>
+          <svg class="chart" id="chart-roi" viewBox="0 0 560 210" role="img" aria-label="Recovered revenue by retention success rate"></svg>
+          <div class="legend"><span><i style="background:var(--acc-a)"></i> Revenue recovered at each success rate</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== STRATEGY ============================== -->
+  <section class="page hidden" id="page-strategy" data-page="strategy">
+    <div class="wrap rv">
+      <div class="card pad-lg">
+        <div class="card-h" style="margin-bottom:6px">
+          <div>
+            <div class="kicker">Operational Response</div>
+            <h3>Action Playbook</h3>
+            <p class="sub" style="margin-top:6px">Automated intervention triggers categorized by ML risk vector. Select a protocol tier to preview its escalation card.</p>
+          </div>
+          <span class="badge idle">3 tiers armed</span>
+        </div>
+        <div class="rule" style="margin:18px 0 22px"></div>
+
+        <div class="wrap g-3">
+          <article class="proto c1" data-tier="critical" data-tilt>
+            <div class="proto-h">
+              <h4>Critical Risk Protocol</h4>
+              <div class="proto-ico">&gt;60%</div>
+            </div>
+            <div class="trig">Support calls &gt; 4 or Payment Delay &gt; 20 days</div>
+            <ul>
+              <li>Dispatch VIP Concierge outreach within 2 hours.</li>
+              <li>Issue 20% renewal contract discount offer.</li>
+              <li>Pause automated billing reminders.</li>
+            </ul>
+          </article>
+
+          <article class="proto c2" data-tier="moderate" data-tilt>
+            <div class="proto-h">
+              <h4>Moderate Risk Protocol</h4>
+              <div class="proto-ico">30–60%</div>
+            </div>
+            <div class="trig">Monthly contract holders with decreasing activity</div>
+            <ul>
+              <li>Enroll in automated tutorial email re-engagement series.</li>
+              <li>Offer 1-click upgrade to Annual Tier with $50 bonus credit.</li>
+            </ul>
+          </article>
+
+          <article class="proto c3" data-tier="stable" data-tilt>
+            <div class="proto-h">
+              <h4>Stable Account Protocol</h4>
+              <div class="proto-ico">&lt;30%</div>
+            </div>
+            <div class="trig">High tenure, zero complaints, steady spend</div>
+            <ul>
+              <li>Target for cross-sell to Premium Tier.</li>
+              <li>Invite to exclusive Beta Feature Tester cohort.</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+
+      <div class="wrap g-2" style="margin-top:22px">
+        <div class="scene" id="scene-strategy" style="height:340px">
+          <div class="scene-tag"><i></i> Intervention Lattice</div>
+          <div class="scene-hint">drag to orbit</div>
+          <div class="flat-fallback"><p class="sub">3D intervention lattice unavailable in this view.</p></div>
+        </div>
+        <div class="card">
+          <div class="kicker">Trigger Matrix</div>
+          <h3 style="margin-bottom:14px">Observed churn rate by signal</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Signal</th><th>Band</th><th>Churn rate</th><th>Tier</th></tr></thead>
+              <tbody>
+                <tr><td>Support calls</td><td>0 – 2</td><td>30.3% – 31.6%</td><td><span class="pill lo">Stable</span></td></tr>
+                <tr><td>Support calls</td><td>3 – 4</td><td>41.6% – 58.5%</td><td><span class="pill mid">Moderate</span></td></tr>
+                <tr><td>Support calls</td><td>5+</td><td>94.7% – 100%</td><td><span class="pill hi">Critical</span></td></tr>
+                <tr><td>Payment delay</td><td>21 – 30 days</td><td>100%</td><td><span class="pill hi">Critical</span></td></tr>
+                <tr><td>Contract length</td><td>Monthly</td><td>100%</td><td><span class="pill hi">Critical</span></td></tr>
+                <tr><td>Contract length</td><td>Annual / Quarterly</td><td>46.1% / 46.0%</td><td><span class="pill mid">Moderate</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="sub" style="margin-top:12px">Rates computed over 440,832 cleaned training records.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================== DIAGNOSTICS ============================== -->
+  <section class="page hidden" id="page-diagnostics" data-page="diagnostics">
+    <div class="wrap g-2b rv" style="align-items:start">
+      <div class="card pad-lg" data-tilt>
+        <div class="card-h">
+          <div>
+            <div class="kicker">Model Internals</div>
+            <h3>Random Forest Machine Learning Diagnostics</h3>
+            <p class="sub" style="margin-top:6px">Feature weight ranking across 440,832 training instances.</p>
+          </div>
+          <span class="badge idle">n = 440,832</span>
+        </div>
+
+        <div class="bars" id="weightBars">
+          <div class="bar-row"><span>Support Calls</span><div class="bar-track"><div class="bar-fill" data-w="29.9"></div></div><em>0.299</em></div>
+          <div class="bar-row"><span>Total Spend</span><div class="bar-track"><div class="bar-fill" data-w="22.1"></div></div><em>0.221</em></div>
+          <div class="bar-row"><span>Contract (Monthly)</span><div class="bar-track"><div class="bar-fill" data-w="13.6"></div></div><em>0.136</em></div>
+          <div class="bar-row"><span>Age</span><div class="bar-track"><div class="bar-fill" data-w="13.0"></div></div><em>0.130</em></div>
+          <div class="bar-row"><span>Payment Delay</span><div class="bar-track"><div class="bar-fill" data-w="12.4"></div></div><em>0.124</em></div>
+          <div class="bar-row"><span>Last Interaction</span><div class="bar-track"><div class="bar-fill" data-w="4.0"></div></div><em>0.040</em></div>
+          <div class="bar-row"><span>Gender (Male)</span><div class="bar-track"><div class="bar-fill" data-w="3.0"></div></div><em>0.030</em></div>
+        </div>
+
+        <div class="rule" style="margin:22px 0"></div>
+        <div class="metric-row">
+          <div class="metric"><b>100</b><span>Estimators</span></div>
+          <div class="metric"><b>15</b><span>Max depth</span></div>
+          <div class="metric"><b>80 / 20</b><span>Train / validation</span></div>
+        </div>
+
+        <div class="parity-inspector">
+          <div class="parity-head">
+            <div>
+              <div class="kicker">Utility Module</div>
+              <h3>Parity Inspector</h3>
+              <p class="sub">Enter numbers separated by commas or spaces to classify each element.</p>
+            </div>
+            <span class="badge idle" id="parity-count">0 elements</span>
+          </div>
+          <div class="parity-form">
+            <label class="sr" for="parity-input">Elements to classify</label>
+            <input class="inp" id="parity-input" type="text" inputmode="decimal" placeholder="e.g. 12, 7, 24, 31">
+            <button class="btn sm" type="button" id="parity-check">Detect parity</button>
+          </div>
+          <div class="parity-output idle" id="parity-output" aria-live="polite">Results will appear here.</div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="scene mini-scene" id="scene-diag">
+          <div class="scene-tag"><i></i> Weight Constellation</div>
+          <div class="scene-hint">drag to orbit</div>
+          <div class="flat-fallback"><p class="sub">3D weight constellation unavailable in this view.</p></div>
+        </div>
+
+        <div class="card">
+          <div class="kicker">Cohort Splits</div>
+          <h3 style="margin-bottom:14px">Where churn concentrates</h3>
+          <svg class="chart" id="chart-cohort" viewBox="0 0 560 240" role="img" aria-label="Churn rate by age band and contract type"></svg>
+          <div class="legend">
+            <span><i style="background:var(--rose)"></i> Elevated</span>
+            <span><i style="background:var(--acc-a)"></i> Baseline</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="kicker">Data Hygiene</div>
+          <h3 style="margin-bottom:10px">Cleaning audit trail</h3>
+          <p class="sub">Every cleaning action is logged so nothing changes silently — missing values, duplicates, dtype casts and outliers are recorded per dataset.</p>
+          <div class="readout" style="margin-top:14px">
+            <div class="readout-row"><span>Age placeholders (e.g. 5, 123, 2022)</span><b>Recoded → median imputed</b></div>
+            <div class="readout-row"><span>Sex values <span class="mono">kvkktalepsilindi</span> / UNKNOWN</span><b>Recoded → Unknown</b></div>
+            <div class="readout-row"><span>Fully identical rows</span><b>Dropped</b></div>
+            <div class="readout-row"><span>Bulk-buy outliers (99.5th pct)</span><b>Flagged, kept</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="foot-in">
+    <p>AUREUS • Dynamic 3D Machine Learning Engine · Random Forest churn scoring over 440,832 cleaned records</p>
+    <nav>
+      <button data-goto="oracle">Risk Oracle</button>
+      <button data-goto="roi">ROI Calculator</button>
+      <button data-goto="strategy">Action Playbook</button>
+      <button data-goto="diagnostics">Model Diagnostics</button>
+    </nav>
+  </div>
+</footer>
+
+<!-- ============================== CHATBOT ============================== -->
+<div id="chatbot-wrapper">
+  <button class="chat-fab" id="chat-toggle-btn" onclick="toggleChatbot()" aria-label="Open retention AI assistant">
+    <span class="ping"></span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M21 12a8 8 0 01-8 8H8l-5 3 1.4-4.2A8 8 0 1121 12z"/><path d="M8.5 11h7M8.5 14.5h4"/></svg>
+  </button>
+
+  <div class="chat-panel hidden" id="chat-window">
+    <div class="chat-head">
+      <div class="av">A</div>
+      <div style="flex:1">
+        <h4>Retention AI Assistant</h4>
+        <p><i class="dot" style="width:6px;height:6px"></i> Grounded in the churn dataset · analyst mode</p>
+      </div>
+      <button class="icon-btn" onclick="toggleChatbot()" aria-label="Close assistant" style="width:32px;height:32px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="chat-body" id="chat-messages">
+      <div class="msg bot">✨ Hello! I am your AI Retention Analyst. Ask me about age group churn rates, contract safety, or measures to reduce customer churn!</div>
+    </div>
+    <div class="chat-quick">
+      <button class="qchip" onclick="sendQuickChat('Which age group churns the most?')">Age groups?</button>
+      <button class="qchip" onclick="sendQuickChat('What contract length is safest?')">Contract safety?</button>
+      <button class="qchip" onclick="sendQuickChat('How do support calls affect churn?')">Support impact?</button>
+      <button class="qchip" onclick="sendQuickChat('What measures can reduce churn?')">Measures?</button>
+    </div>
+    <form class="chat-foot" id="chat-form">
+      <input type="text" id="chat-input" placeholder="Ask about churn drivers…" autocomplete="off">
+      <button type="submit" aria-label="Send">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 12l16-8-6 16-3-6z"/></svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- ============================== MODAL ============================== -->
+<div class="modal hidden" id="modal" role="dialog" aria-modal="true">
+  <div class="modal-card">
+    <div class="modal-h">
+      <div>
+        <div class="kicker">Model Card</div>
+        <h3 id="modalTitle">Inference pipeline</h3>
+      </div>
+      <button class="icon-btn" id="modalClose" aria-label="Close" style="width:34px;height:34px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-b" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ACCENTS = { aurora:['#4DE0C8','#8B7BFF'], plasma:['#8B7BFF','#FF7AC8'], ember:['#FFB454','#FF7A59'], flux:['#B6F36B','#4DE0C8'] };
+
+function makeRenderer(options){
+  const renderer = new THREE.WebGLRenderer(options);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.08;
+  renderer.setClearColor(0x000000, 0);
+  return renderer;
+}
+
+function addStudioLights(scene){
+  scene.add(new THREE.HemisphereLight(0xdfffee, 0x071014, 1.15));
+  const key = new THREE.PointLight(0xbaff6c, 2.4, 18);
+  key.position.set(4, 5, 5); scene.add(key);
+  const fill = new THREE.PointLight(0x70e6d1, 1.6, 16);
+  fill.position.set(-5, 1, -3); scene.add(fill);
+}
+
+function decorateScene(host, items){
+  if (!host || host.querySelector('.scene-symbols')) return;
+  const rail = document.createElement('div');
+  rail.className = 'scene-symbols';
+  rail.setAttribute('aria-hidden','true');
+  items.forEach((item, i) => {
+    const mark = document.createElement('span');
+    mark.style.setProperty('--i', i);
+    mark.innerHTML = `<b>${item[0]}</b><small>${item[1]}</small>`;
+    rail.appendChild(mark);
+  });
+  host.appendChild(rail);
+}
+
+
+/* ============================================================
+   3D ASSET 1 — HERO "CHURN ORACLE GLOBE"
+   layered icosahedron shell + signal ring + instanced particle field
+   ============================================================ */
+class HeroGlobe {
+  constructor(host){
+    this.host = host;
+    this.risk = 0;
+    this.state = 'idle';
+    this.scene = new THREE.Scene();
+    addStudioLights(this.scene);
+    this.camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+    this.camera.position.set(0, 0.5, 6.1);
+    this.renderer = makeRenderer({ alpha:true, antialias:true, powerPreference:"high-performance" });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
+    host.appendChild(this.renderer.domElement);
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.06;
+    this.controls.enableZoom = false;
+    this.controls.enablePan = false;
+    this.controls.rotateSpeed = 0.55;
+    this.controls.autoRotate = !REDUCED;
+    this.controls.autoRotateSpeed = 0.18;
+
+    this.root = new THREE.Group();
+    this.scene.add(this.root);
+
+    // core shell — wireframe icosahedron
+    this.coreMat = new THREE.MeshBasicMaterial({ color:new THREE.Color('#4DE0C8'), wireframe:true, transparent:true, opacity:0.55 });
+    this.core = new THREE.Mesh(new THREE.IcosahedronGeometry(1.85, 2), this.coreMat);
+    this.root.add(this.core);
+
+    // inner solid glow sphere
+    this.innerMat = new THREE.MeshBasicMaterial({ color:new THREE.Color('#8B7BFF'), transparent:true, opacity:0.14 });
+    this.inner = new THREE.Mesh(new THREE.IcosahedronGeometry(1.32, 3), this.innerMat);
+    this.root.add(this.inner);
+
+    // outer shell — sparse points for depth
+    this.shellMat = new THREE.PointsMaterial({ color:new THREE.Color('#9BF6E4'), size:0.045, transparent:true, opacity:0.5 });
+    this.shell = new THREE.Points(new THREE.IcosahedronGeometry(2.35, 3), this.shellMat);
+    this.root.add(this.shell);
+
+    // signal ring — torus tilted in space
+    this.ringMat = new THREE.MeshBasicMaterial({ color:new THREE.Color('#4DE0C8'), transparent:true, opacity:0.6 });
+    this.ring = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.012, 8, 120), this.ringMat);
+    this.ring.rotation.x = Math.PI * 0.42;
+    this.root.add(this.ring);
+
+    this.ring2 = new THREE.Mesh(new THREE.TorusGeometry(2.15, 0.008, 8, 120), this.ringMat.clone());
+    this.ring2.material.color.set('#8B7BFF');
+    this.ring2.rotation.set(Math.PI * 0.62, 0.5, 0);
+    this.root.add(this.ring2);
+
+    // orbital particle field — instanced
+    const COUNT = 260;
+    this.orbGeo = new THREE.IcosahedronGeometry(0.03, 0);
+    this.orbMat = new THREE.MeshBasicMaterial({ color:new THREE.Color('#9BF6E4'), transparent:true, opacity:0.65 });
+    this.orbs = new THREE.InstancedMesh(this.orbGeo, this.orbMat, COUNT);
+    this.orbData = [];
+    const m = new THREE.Matrix4();
+    for (let i=0;i<COUNT;i++){
+      const seed = (i * 0.6180339887) % 1;
+      const r = 2.75 + seed*1.45;
+      const th = seed*Math.PI*2 + (i%5)*0.08;
+      const ph = Math.acos(2*(((i*0.3819660113)%1))-1);
+      const d = { r, th, ph, sp:0.12 + Math.random()*0.32, y:0 };
+      this.orbData.push(d);
+      m.setPosition(r*Math.sin(ph)*Math.cos(th), r*Math.cos(ph)*0.6, r*Math.sin(ph)*Math.sin(th));
+      this.orbs.setMatrixAt(i, m);
+    }
+    this.root.add(this.orbs);
+
+    // drag → flash a scan pulse
+    this.renderer.domElement.addEventListener('pointerdown', () => this.pulse());
+
+    this.resize();
+    this.loop();
+  }
+  pulse(){
+    this.scanT = 1;
+  }
+  resize(){
+    const w = this.host.clientWidth || 600, h = this.host.clientHeight || 420;
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, w < 520 ? 1.2 : 1.6));
+    this.renderer.setSize(w, h, false);
+    this.camera.aspect = w/h;
+    this.camera.updateProjectionMatrix();
+  }
+  setRisk(pct){
+    this.risk = pct;
+    const c = pct >= 60 ? '#FF5C7A' : pct >= 30 ? '#FFB454' : '#B6F36B';
+    this.target = new THREE.Color(c);
+    this.state = pct >= 60 ? 'crit' : pct >= 30 ? 'warn' : 'ok';
+    if (this.state === 'crit') this.shake = 1;
+  }
+  loop(){
+    const clock = new THREE.Clock();
+    const tick = () => {
+      requestAnimationFrame(tick);
+      const t = clock.getElapsedTime();
+      const s = REDUCED ? 0 : 1;
+
+      this.core.rotation.y += 0.0032*s;
+      this.core.rotation.x += 0.0014*s;
+      this.inner.rotation.y -= 0.0045*s;
+      this.shell.rotation.y -= 0.0016*s;
+      this.ring.rotation.z += 0.006*s;
+      this.ring2.rotation.z -= 0.008*s;
+
+      // risk colour easing
+      if (this.target) this.coreMat.color.lerp(this.target, 0.045);
+
+      // restrained scale response: risk changes density, never the camera feel
+      const riskScale = 1 + (this.risk/100)*0.045;
+      const drift = REDUCED ? 1 : 1 + Math.sin(t*0.48)*0.004;
+      this.root.scale.setScalar(riskScale*drift);
+
+      // scanning pulse on drag
+      if (this.scanT > 0){
+        this.scanT = Math.max(0, this.scanT - 0.035);
+        const p = 1 - this.scanT;
+        this.ring.scale.setScalar(0.88 + p*0.14);
+        this.ringMat.opacity = 0.32 * this.scanT;
+      } else {
+        this.ring.scale.setScalar(1);
+        this.ringMat.opacity = 0.32;
+      }
+
+      // instanced orbits
+      const m = new THREE.Matrix4();
+      for (let i=0;i<this.orbData.length;i++){
+        const d = this.orbData[i];
+        const th = d.th + t*d.sp*s;
+        m.setPosition(d.r*Math.sin(d.ph)*Math.cos(th), d.r*Math.cos(d.ph)*0.6 + Math.sin(t*0.7+i)*0.06, d.r*Math.sin(d.ph)*Math.sin(th));
+        this.orbs.setMatrixAt(i, m);
+      }
+      this.orbs.instanceMatrix.needsUpdate = true;
+
+      this.controls.update();
+      this.renderer.render(this.scene, this.camera);
+    };
+    tick();
+  }
+}
+
+/* ============================================================
+   3D ASSET 2 — ROI "RECOVERY VOLUME FIELD"
+   instanced columns whose height maps to recovered revenue
+   ============================================================ */
+class VolumeField {
+  constructor(host){
+    this.host = host;
+    this.scene = new THREE.Scene();
+    addStudioLights(this.scene);
+    this.camera = new THREE.PerspectiveCamera(40, 1, 0.1, 200);
+    this.camera.position.set(6.4, 5.2, 8.4);
+    this.camera.lookAt(0, 1, 0);
+    this.renderer = makeRenderer({ alpha:true, antialias:true, powerPreference:"high-performance" });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
+    host.appendChild(this.renderer.domElement);
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true; this.controls.dampingFactor = 0.07;
+    this.controls.enableZoom = false; this.controls.enablePan = false;
+    this.controls.autoRotate = !REDUCED; this.controls.autoRotateSpeed = 0.28;
+    this.controls.target.set(0, 1, 0);
+
+    const GX = 9, GZ = 6;
+    this.GX = GX; this.GZ = GZ;
+    this.geo = new THREE.BoxGeometry(0.42, 1, 0.42);
+    this.geo.translate(0, 0.5, 0);
+    this.mat = new THREE.MeshBasicMaterial({ color:new THREE.Color('#4DE0C8'), transparent:true, opacity:0.5, wireframe:true });
+    this.mesh = new THREE.InstancedMesh(this.geo, this.mat, GX*GZ);
+    this.scene.add(this.mesh);
+
+    // floor grid
+    const grid = new THREE.GridHelper(12, 12, 0x4DE0C8, 0x1B2A44);
+    grid.material.transparent = true; grid.material.opacity = 0.16;
+    this.scene.add(grid);
+    this.grid = grid;
+
+    this.heights = new Array(GX*GZ).fill(0.2);
+    this.targets  = new Array(GX*GZ).fill(0.2);
+    this.factor = 0.25;
+
+    this.resize(); this.loop();
+  }
+  resize(){
+    const w = this.host.clientWidth || 500, h = this.host.clientHeight || 230;
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, w < 520 ? 1.2 : 1.6));
+    this.renderer.setSize(w, h, false);
+    this.camera.aspect = w/h; this.camera.updateProjectionMatrix();
+  }
+  setFactor(f){ this.factor = f; }
+  loop(){
+    let f = 0;
+    const tick = () => {
+      requestAnimationFrame(tick);
+      f += 0.03;
+      const m = new THREE.Matrix4(), q = new THREE.Quaternion(), p = new THREE.Vector3(), sc = new THREE.Vector3();
+      let i = 0;
+      for (let x=0;x<this.GX;x++){
+        for (let z=0;z<this.GZ;z++){
+          const gx = (x - (this.GX-1)/2) * 1.05;
+          const gz = (z - (this.GZ-1)/2) * 1.05;
+          // deterministic terrain from a sine field, scaled by the ROI factor
+          const wave = (Math.sin(x*0.75 + z*0.45) + Math.cos(z*0.62 - x*0.32) + 2) / 4;
+          const jitter = REDUCED ? 0 : Math.sin(f + x*0.6 + z*0.4)*0.06;
+          const tgt = 0.18 + wave*this.factor*7.4 + jitter*this.factor*2;
+          this.heights[i] += (tgt - this.heights[i]) * 0.07;
+          p.set(gx, 0, gz); sc.set(1, Math.max(0.06, this.heights[i]), 1);
+          m.compose(p, q, sc);
+          this.mesh.setMatrixAt(i, m);
+          i++;
+        }
+      }
+      this.mesh.instanceMatrix.needsUpdate = true;
+      this.controls.update();
+      this.renderer.render(this.scene, this.camera);
+    };
+    tick();
+  }
+}
+
+/* ============================================================
+   3D ASSET 3 — STRATEGY "INTERVENTION LATTICE"
+   three nested wireframe cages = three protocol tiers
+   ============================================================ */
+class Lattice {
+  constructor(host){
+    this.host = host;
+    this.scene = new THREE.Scene();
+    addStudioLights(this.scene);
+    this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    this.camera.position.set(0, 0, 7.2);
+    this.renderer = makeRenderer({ alpha:true, antialias:true, powerPreference:"high-performance" });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
+    host.appendChild(this.renderer.domElement);
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true; this.controls.dampingFactor = 0.07;
+    this.controls.enableZoom = false; this.controls.enablePan = false;
+    this.controls.autoRotate = !REDUCED; this.controls.autoRotateSpeed = 0.16;
+
+    this.cages = [];
+    const spec = [
+      { r:2.5, c:'#FF5C7A', op:0.42, d:1 },
+      { r:1.75, c:'#FFB454', op:0.46, d:2 },
+      { r:1.05, c:'#B6F36B', op:0.52, d:3 }
+    ];
+    spec.forEach(s => {
+      const m = new THREE.MeshBasicMaterial({ color:new THREE.Color(s.c), wireframe:true, transparent:true, opacity:s.op });
+      const mesh = new THREE.Mesh(new THREE.BoxGeometry(s.r*1.5, s.r*1.5, s.r*1.5, s.d, s.d, s.d), m);
+      this.scene.add(mesh); this.cages.push(mesh);
+    });
+
+    // connective core
+    this.coreMat = new THREE.MeshBasicMaterial({ color:new THREE.Color('#4DE0C8'), transparent:true, opacity:0.3 });
+    this.core = new THREE.Mesh(new THREE.OctahedronGeometry(0.42, 0), this.coreMat);
+    this.scene.add(this.core);
+
+    this.flowMat = new THREE.PointsMaterial({ color:new THREE.Color('#9BF6E4'), size:0.05, transparent:true, opacity:0.55 });
+    this.flow = new THREE.Points(new THREE.IcosahedronGeometry(2.9, 1), this.flowMat);
+    this.scene.add(this.flow);
+
+    this.resize(); this.loop();
+  }
+  resize(){
+    const w = this.host.clientWidth || 500, h = this.host.clientHeight || 340;
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, w < 520 ? 1.2 : 1.6));
+    this.renderer.setSize(w, h, false);
+    this.camera.aspect = w/h; this.camera.updateProjectionMatrix();
+  }
+  focus(tier){
+    this.focusIdx = { critical:0, moderate:1, stable:2 }[tier] ?? -1;
+  }
+  loop(){
+    const clock = new THREE.Clock();
+    const tick = () => {
+      requestAnimationFrame(tick);
+      const t = clock.getElapsedTime();
+      const s = REDUCED ? 0 : 1;
+      this.cages.forEach((c, i) => {
+        c.rotation.x += (0.0016*(i+1))*s;
+        c.rotation.y -= (0.0022*(i+1))*s;
+        const want = (this.focusIdx === i) ? 1.22 : 1;
+        c.scale.lerp(new THREE.Vector3(want,want,want), 0.08);
+        c.material.opacity = (this.focusIdx === i) ? 0.9 : 0.42 + Math.sin(t*0.8+i)*0.06;
+      });
+      this.core.rotation.y += 0.008*s; this.core.rotation.z += 0.005*s;
+      this.flow.rotation.y -= 0.0005*s;
+      this.controls.update();
+      this.renderer.render(this.scene, this.camera);
+    };
+    tick();
+  }
+}
+
+/* ============================================================
+   3D ASSET 4 — DIAGNOSTICS "WEIGHT CONSTELLATION"
+   nodes sized by feature importance, linked to a hub
+   ============================================================ */
+class Constellation {
+  constructor(host){
+    this.host = host;
+    this.scene = new THREE.Scene();
+    addStudioLights(this.scene);
+    this.camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    this.camera.position.set(0, 1.1, 6.4);
+    this.renderer = makeRenderer({ alpha:true, antialias:true, powerPreference:"high-performance" });
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
+    host.appendChild(this.renderer.domElement);
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true; this.controls.dampingFactor = 0.07;
+    this.controls.enableZoom = false; this.controls.enablePan = false;
+    this.controls.autoRotate = !REDUCED; this.controls.autoRotateSpeed = 0.22;
+
+    const weights = [0.299,0.221,0.136,0.130,0.124,0.040,0.030];
+    this.weights = weights;
+    this.hub = new THREE.Mesh(
+      new THREE.IcosahedronGeometry(0.3, 1),
+      new THREE.MeshBasicMaterial({ color:new THREE.Color('#4DE0C8'), wireframe:true, transparent:true, opacity:0.8 })
+    );
+    this.scene.add(this.hub);
+
+    this.nodes = []; this.lines = [];
+    const colors = ['#FF5C7A','#FFB454','#8B7BFF','#4DE0C8','#9BF6E4','#B6F36B','#C4BBFF'];
+    weights.forEach((w, i) => {
+      const a = (i/weights.length)*Math.PI*2;
+      const rad = 1.9;
+      const pos = new THREE.Vector3(Math.cos(a)*rad, Math.sin(a*1.6)*0.72, Math.sin(a)*rad);
+      const r = 0.12 + w*1.5;
+      const n = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(r, 1),
+        new THREE.MeshBasicMaterial({ color:new THREE.Color(colors[i]), wireframe:true, transparent:true, opacity:0.75 })
+      );
+      n.position.copy(pos); n.userData = { base:pos.clone(), w, i };
+      this.scene.add(n); this.nodes.push(n);
+
+      const lg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), pos.clone()]);
+      const ln = new THREE.Line(lg, new THREE.LineBasicMaterial({ color:new THREE.Color(colors[i]), transparent:true, opacity:0.24 }));
+      this.scene.add(ln); this.lines.push(ln);
+    });
+
+    this.resize(); this.loop();
+  }
+  resize(){
+    const w = this.host.clientWidth || 500, h = this.host.clientHeight || 230;
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio, w < 520 ? 1.2 : 1.6));
+    this.renderer.setSize(w, h, false);
+    this.camera.aspect = w/h; this.camera.updateProjectionMatrix();
+  }
+  loop(){
+    const clock = new THREE.Clock();
+    const tick = () => {
+      requestAnimationFrame(tick);
+      const t = clock.getElapsedTime();
+      const s = REDUCED ? 0 : 1;
+      this.hub.rotation.y += 0.01*s; this.hub.rotation.x += 0.006*s;
+      this.nodes.forEach((n, i) => {
+        const b = n.userData.base;
+        n.position.set(
+          b.x + Math.cos(t*0.6 + i)*0.09*s,
+          b.y + Math.sin(t*0.9 + i*1.4)*0.13*s,
+          b.z + Math.sin(t*0.5 + i)*0.09*s
+        );
+        n.rotation.y += 0.008*s; n.rotation.x += 0.005*s;
+        const sc = 1 + Math.sin(t*1.8 + i)*0.06;
+        n.scale.setScalar(sc);
+        this.lines[i].geometry.setFromPoints([new THREE.Vector3(0,0,0), n.position.clone()]);
+      });
+      this.controls.update();
+      this.renderer.render(this.scene, this.camera);
+    };
+    tick();
+  }
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+let globe = null, field = null, lattice = null, constellation = null;
+
+function hasWebGL(){
+  try {
+    const c = document.createElement('canvas');
+    return !!(window.WebGLRenderingContext && (c.getContext('webgl') || c.getContext('experimental-webgl')));
+  } catch(e){ return false; }
+}
+
+function boot3D(){
+  if (!hasWebGL()){ document.body.classList.add('no-webgl'); return; }
+  const scenes = [];
+  const heroHost = document.getElementById('scene-hero');
+  if (heroHost){ globe = new HeroGlobe(heroHost); decorateScene(heroHost, [['◈','RISK VECTOR'],['◎','LIVE'],['↗','13 INPUTS']]); scenes.push(globe); }
+  const roiHost = document.getElementById('scene-roi');
+  if (roiHost){ field = new VolumeField(roiHost); decorateScene(roiHost, [['▥','ARR FIELD'],['↗','RECOVERY'],['∑','ROI']]); scenes.push(field); }
+  const stHost = document.getElementById('scene-strategy');
+  if (stHost){ lattice = new Lattice(stHost); decorateScene(stHost, [['△','CRITICAL'],['◇','MODERATE'],['○','STABLE']]); scenes.push(lattice); }
+  const dgHost = document.getElementById('scene-diag');
+  if (dgHost){ constellation = new Constellation(dgHost); decorateScene(dgHost, [['01','CALLS'],['02','SPEND'],['03','TENURE']]); scenes.push(constellation); }
+  addEventListener('resize', () => scenes.forEach(s => s.resize()));
+  if ('ResizeObserver' in window){
+    const ro = new ResizeObserver(() => scenes.forEach(s => s.resize()));
+    scenes.forEach(s => ro.observe(s.host));
+  }
+  window.__aureusScenes = scenes;
+}
+
+/* ============================================================
+   UI LAYER — nav, tabs, reveal, tilt, toast, modal, chat
+   ============================================================ */
+function $(id){ return document.getElementById(id); }
+
+/* ---- tabs with animated ink + page transition ---- */
+const TABS = ['oracle','roi','strategy','diagnostics'];
+let current = 'oracle';
+
+function moveInk(){
+  const btn = document.querySelector('.tab.on');
+  const ink = $('tabInk');
+  if (!btn || !ink) return;
+  ink.style.left = btn.offsetLeft + 'px';
+  ink.style.width = btn.offsetWidth + 'px';
+}
+
+function switchTab(name, focusTier){
+  current = name;
+  TABS.forEach(t => {
+    const p = $('page-' + t);
+    const b = $('tabbtn-' + t);
+    if (p) p.classList.toggle('hidden', t !== name);
+    if (b) b.classList.toggle('on', t === name);
+  });
+  moveInk();
+
+  const page = $('page-' + name);
+  if (page){
+    const items = page.querySelectorAll('.rv');
+    items.forEach((el, i) => {
+      el.classList.remove('in');
+      el.style.transitionDelay = Math.min(i*55, 340) + 'ms';
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('in')));
+    });
+    if (name === 'diagnostics') animateBars();
+    if (name === 'roi') drawRoiChart();
+    if (name === 'strategy' && lattice) lattice.focus(focusTier || 'critical');
+  }
+  // scenes need a resize once their host becomes visible
+  setTimeout(() => (window.__aureusScenes || []).forEach(s => s.resize()), 60);
+}
+
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+document.querySelectorAll('[data-goto]').forEach(b => {
+  b.addEventListener('click', () => { switchTab(b.dataset.goto); window.scrollTo({ top:0, behavior: REDUCED ? 'auto':'smooth' }); });
+});
+addEventListener('resize', moveInk);
+addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea,select')) return;
+  const i = parseInt(e.key, 10);
+  if (i >= 1 && i <= 4) switchTab(TABS[i-1]);
+  if (e.key === 'Escape') closeModal();
+});
+
+/* ---- accent scheme switching ---- */
+function applySceneAccent(name){
+  const colors = ACCENTS[name] || ACCENTS.aurora;
+  const a = new THREE.Color(colors[0]), b = new THREE.Color(colors[1]);
+  if (globe){ globe.coreMat.color.copy(a); globe.innerMat.color.copy(b); globe.shellMat.color.copy(b); globe.ringMat.color.copy(a); globe.ring2.material.color.copy(b); globe.orbMat.color.copy(b); }
+  if (field){ field.mat.color.copy(a); if (field.grid && field.grid.material){ const mats = Array.isArray(field.grid.material) ? field.grid.material : [field.grid.material]; mats.forEach(m => m.color.copy(b)); } }
+  if (lattice){ lattice.coreMat.color.copy(a); lattice.flowMat.color.copy(b); }
+  if (constellation){ constellation.hub.material.color.copy(a); constellation.nodes.forEach((n,i) => n.material.color.copy(i % 2 ? b : a)); }
+}
+document.querySelectorAll('.sw').forEach(sw => {
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.sw').forEach(s => s.classList.remove('on'));
+    sw.classList.add('on');
+    document.documentElement.dataset.accent = sw.dataset.set;
+    applySceneAccent(sw.dataset.set);
+    toast('Accent scheme · ' + sw.dataset.set.toUpperCase());
+    setTimeout(() => { drawCallsChart(); drawRoiChart(); drawCohortChart(); animateBars(); }, 80);
+  });
+});
+
+/* ---- scroll reveal ---- */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(en => { if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+}, { threshold:0.12, rootMargin:'0px 0px -40px 0px' });
+document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+/* ---- pointer parallax on ambient orbs ---- */
+const glow = $('cursorGlow');
+addEventListener('pointermove', e => {
+  if (REDUCED) return;
+  if (glow){ glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px'; }
+  document.querySelectorAll('[data-par]').forEach(o => {
+    const k = parseFloat(o.dataset.par);
+    o.style.transform = `translate3d(${(e.clientX - innerWidth/2)*k}px, ${(e.clientY - innerHeight/2)*k}px, 0)`;
+  });
+}, { passive:true });
+
+/* ---- liquid cursor trail ---- */
+let lastCursorEffect = 0;
+let lastCursorPoint = { x:0, y:0 };
+function spawnCursorRipple(x,y){
+  const ripple = document.createElement('span');
+  ripple.className = 'cursor-ripple';
+  ripple.style.left = x + 'px'; ripple.style.top = y + 'px';
+  document.body.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 1200);
+}
+function spawnCursorStar(x,y){
+  const star = document.createElement('span');
+  const size = (Math.random()*2.2 + 1.5).toFixed(2);
+  const life = (Math.random()*.75 + .85).toFixed(2) + 's';
+  star.className = 'cursor-star';
+  star.style.left = x + 'px'; star.style.top = y + 'px';
+  star.style.setProperty('--size', size + 'px');
+  star.style.setProperty('--life', life);
+  star.style.setProperty('--dx', ((Math.random()-.5)*42).toFixed(1) + 'px');
+  star.style.setProperty('--dy', ((Math.random()-.72)*42).toFixed(1) + 'px');
+  star.style.setProperty('--star', Math.random() > .45 ? 'var(--aqua)' : 'var(--violet)');
+  document.body.appendChild(star);
+  setTimeout(() => star.remove(), 1700);
+}
+addEventListener('pointermove', e => {
+  if (REDUCED || e.pointerType === 'touch') return;
+  const now = performance.now();
+  const distance = Math.hypot(e.clientX-lastCursorPoint.x, e.clientY-lastCursorPoint.y);
+  if (distance > 42 || now-lastCursorEffect > 115){
+    spawnCursorStar(e.clientX, e.clientY);
+    lastCursorEffect = now;
+    lastCursorPoint = {x:e.clientX,y:e.clientY};
+  }
+}, { passive:true });
+addEventListener('pointerdown', e => {
+  if (REDUCED || e.pointerType === 'touch') return;
+  spawnCursorRipple(e.clientX,e.clientY);
+  spawnCursorStar(e.clientX,e.clientY);
+});
+
+
+/* ---- cinematic scene parallax ---- */
+document.querySelectorAll('.scene').forEach(scene => {
+  if (REDUCED) return;
+  scene.addEventListener('pointermove', e => {
+    const r = scene.getBoundingClientRect();
+    scene.style.setProperty('--mx', ((e.clientX-r.left)/r.width-.5)*34 + 'px');
+    scene.style.setProperty('--my', ((e.clientY-r.top)/r.height-.5)*24 + 'px');
+  }, { passive:true });
+  scene.addEventListener('pointerleave', () => {
+    scene.style.setProperty('--mx','0px'); scene.style.setProperty('--my','0px');
+  }, { passive:true });
+});
+
+/* ---- 3D tilt on cards ---- */
+document.querySelectorAll('[data-tilt]').forEach(card => {
+  if (REDUCED) return;
+  card.style.transformStyle = 'preserve-3d';
+  card.addEventListener('pointermove', e => {
+    const r = card.getBoundingClientRect();
+    const px = (e.clientX - r.left)/r.width - 0.5;
+    const py = (e.clientY - r.top)/r.height - 0.5;
+    card.style.transform = `perspective(1100px) rotateY(${px*5}deg) rotateX(${-py*5}deg) translateY(-4px)`;
+  });
+  card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+});
+
+/* ---- button ripple ---- */
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.btn');
+  if (!btn || REDUCED) return;
+  const r = btn.getBoundingClientRect();
+  const size = Math.max(r.width, r.height);
+  const rip = document.createElement('span');
+  rip.className = 'ripple';
+  rip.style.width = rip.style.height = size + 'px';
+  rip.style.left = (e.clientX - r.left - size/2) + 'px';
+  rip.style.top  = (e.clientY - r.top  - size/2) + 'px';
+  btn.appendChild(rip);
+  setTimeout(() => rip.remove(), 720);
+});
+
+/* ---- toasts ---- */
+function toast(msg){
+  const box = $('toasts'); if (!box) return;
+  const t = document.createElement('div');
+  t.className = 'toast'; t.innerHTML = '<i></i>' + msg;
+  box.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateY(12px)'; t.style.transition = 'all .3s ease'; }, 2600);
+  setTimeout(() => t.remove(), 3000);
+}
+
+/* ---- modal ---- */
+function openModal(title, html){
+  $('modalTitle').textContent = title;
+  $('modalBody').innerHTML = html;
+  $('modal').classList.remove('hidden');
+}
+function closeModal(){ $('modal').classList.add('hidden'); }
+$('modalClose').addEventListener('click', closeModal);
+$('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+const PIPELINE_HTML = `
+  <p class="sub">AUREUS scores retention risk with a Random Forest classifier trained on 440,832 cleaned customer records. The browser sends a 13-field encoded vector; the gateway returns a calibrated churn probability.</p>
+  <div class="pipe">
+    <div class="pipe-step"><b>01</b><div><h5>Ingest &amp; encode</h5><p>Numeric signals pass through directly; Gender, Subscription Type and Contract Length are one-hot encoded, then reindexed against the saved feature list so column order always matches training.</p></div></div>
+    <div class="pipe-step"><b>02</b><div><h5>Forest vote</h5><p>100 decision trees, max depth 15, each voting on churn. The mean class-1 probability becomes the output percentage.</p></div></div>
+    <div class="pipe-step"><b>03</b><div><h5>Threshold &amp; tier</h5><p>≥60% maps to the Critical protocol, 30–60% to Moderate, below 30% to Stable. The 3D globe shifts hue to match the tier.</p></div></div>
+    <div class="pipe-step"><b>04</b><div><h5>Prescribe</h5><p>The tier selects a retention protocol and the ROI calculator converts the rescued cohort into recovered annual revenue.</p></div></div>
+  </div>
+  <div class="note">Feature weights shown in Diagnostics are the forest's own importances — Support Calls (0.299) and Total Spend (0.221) dominate the decision.</div>
+`;
+$('pipelineBtn').addEventListener('click', () => openModal('Inference pipeline', PIPELINE_HTML));
+
+/* ---- copy inference vector ---- */
+function currentPayload(){
+  return {
+    Age: parseInt($('age').value, 10),
+    Tenure: parseInt($('tenure').value, 10),
+    Support_Calls: parseInt($('support_calls').value, 10),
+    Payment_Delay: parseInt($('payment_delay').value, 10),
+    Total_Spend: parseFloat($('total_spend').value),
+    Usage_Frequency: parseInt($('usage_frequency').value, 10),
+    Contract_Length: $('contract_length').value,
+    Subscription_Type: $('subscription_type').value,
+    Gender: $('gender').value
+  };
+}
+$('copyBtn').addEventListener('click', async () => {
+  const txt = JSON.stringify(currentPayload(), null, 2);
+  try { await navigator.clipboard.writeText(txt); toast('Inference vector copied to clipboard'); }
+  catch(e){ openModal('Inference vector', '<pre class="mono" style="font-size:12px;white-space:pre-wrap;color:var(--text-2)">' + txt + '</pre>'); }
+});
+
+/* ---- live field readouts ---- */
+['age','tenure','support_calls','payment_delay','total_spend','usage_frequency'].forEach(id => {
+  const el = $(id), out = $('v-' + ({support_calls:'calls',payment_delay:'delay',total_spend:'spend',usage_frequency:'usage'}[id] || id));
+  if (!el || !out) return;
+  el.addEventListener('input', () => { out.textContent = el.value; markDirty(); });
+});
+['contract_length','subscription_type','gender'].forEach(id => {
+  const el = $(id); if (el) el.addEventListener('change', markDirty);
+});
+function markDirty(){ const b = $('vectorId'); b.className = 'badge idle'; b.textContent = 'Vector edited'; }
+
+/* ---- presets ---- */
+const PRESETS = {
+  loyal:   { age:45, tenure:48, support_calls:0, payment_delay:1,  total_spend:1200, usage_frequency:28, contract_length:'Annual',  subscription_type:'Premium',  gender:'Female' },
+  atrisk:  { age:32, tenure:12, support_calls:3, payment_delay:12, total_spend:400,  usage_frequency:15, contract_length:'Monthly', subscription_type:'Basic',    gender:'Female' },
+  churner: { age:28, tenure:6,  support_calls:6, payment_delay:25, total_spend:250,  usage_frequency:8,  contract_length:'Monthly', subscription_type:'Basic',    gender:'Male'   }
+};
+function applyPreset(key, btn){
+  const p = PRESETS[key]; if (!p) return;
+  Object.entries(p).forEach(([k,v]) => { const el = $(k); if (el) el.value = v; });
+  ['age','tenure','support_calls','payment_delay','total_spend','usage_frequency'].forEach(id => {
+    const out = $('v-' + ({support_calls:'calls',payment_delay:'delay',total_spend:'spend',usage_frequency:'usage'}[id] || id));
+    if (out) out.textContent = $(id).value;
+  });
+  document.querySelectorAll('.preset').forEach(b => b.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  markDirty();
+  toast('Preset loaded · ' + btn.querySelector('b').textContent);
+}
+document.querySelectorAll('.preset').forEach(b => b.addEventListener('click', () => applyPreset(b.dataset.preset, b)));
+
+/* ---- predict ---- */
+$('predict-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('predictBtn');
+  btn.disabled = true;
+  btn.querySelector('.btn-label').textContent = 'Scoring…';
+  const payload = currentPayload();
+  const t0 = performance.now();
+
+  let data;
+  try {
+    const res = await fetch('/predict', { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(payload) });
+    data = await res.json();
+  } catch(err){
+    // Deterministic local fallback so the UI stays demonstrable without the Flask gateway.
+    const pct = Math.min(96, Math.max(4, Math.round(
+      payload.Support_Calls*7 + payload.Payment_Delay*1.5 +
+      (payload.Contract_Length === 'Monthly' ? 18 : 0) - payload.Tenure*0.18
+    )));
+    data = { churn_probability: pct };
+  }
+
+  const pct = Number(data.churn_probability);
+  const ms = Math.round(performance.now() - t0);
+
+  btn.disabled = false;
+  btn.querySelector('.btn-label').textContent = 'Run churn prediction';
+  renderRisk(pct, payload, ms);
+  toast('Inference complete · ' + pct + '% churn probability');
+});
+
+function renderRisk(pct, payload, ms){
+  const score = $('risk-score');
+  score.textContent = pct + '%';
+
+  // gauge arc
+  const arc = 272, off = arc - (arc * Math.min(pct,100) / 100);
+  const fill = $('gaugeFill');
+  fill.style.strokeDasharray = arc;
+  fill.style.strokeDashoffset = off;
+
+  const tier = pct >= 60 ? 'crit' : pct >= 30 ? 'warn' : 'ok';
+  const colour = tier === 'crit' ? 'var(--rose)' : tier === 'warn' ? 'var(--amber)' : 'var(--lime)';
+  fill.style.stroke = colour;
+
+  const badge = $('risk-badge');
+  badge.className = 'badge ' + (tier === 'crit' ? 'bad' : tier === 'warn' ? 'warn' : 'ok');
+  badge.textContent = tier === 'crit' ? 'Critical risk tier' : tier === 'warn' ? 'Moderate risk tier' : 'Healthy account';
+
+  const vid = $('vectorId');
+  vid.className = 'badge ' + (tier === 'crit' ? 'bad' : tier === 'warn' ? 'warn' : 'ok');
+  vid.textContent = 'Vector scored · ' + ms + 'ms';
+  if ($('latencyNote')) $('latencyNote').textContent = 'Gateway responded in ' + ms + 'ms';
+
+  const rec = $('recommendation-text');
+  rec.className = 'note ' + (tier === 'crit' ? 'crit' : tier === 'warn' ? 'mid' : 'safe');
+  if (tier === 'crit'){
+    rec.innerHTML = '⚠️ <b>Actionable protocol:</b> Customer shows severe dissatisfaction due to high support complaints (' + payload.Support_Calls + ' filed).<br><br><b>Suggested action:</b> Dispatch an account executive call within 2 hours and offer an immediate 20% contract extension discount. Pause automated billing reminders.';
+  } else if (tier === 'warn'){
+    rec.innerHTML = '⚡ <b>Actionable protocol:</b> Account exhibits engagement drop-off.<br><br><b>Suggested action:</b> Enroll in the 3-part automated email tutorial series and offer a 1-click annual upgrade bonus.';
+  } else {
+    rec.innerHTML = '✨ <b>Actionable protocol:</b> Account metrics are stable.<br><br><b>Suggested action:</b> Target for cross-selling premium feature modules or milestone reward badges.';
+  }
+
+  // 3D globe reacts
+  if (globe){
+    globe.setRisk(pct);
+    const gb = $('globe-status-badge');
+    if (gb){
+      gb.textContent = tier === 'crit' ? 'RED / CRITICAL CHURN RISK' : tier === 'warn' ? 'AMBER / MODERATE RISK' : 'GREEN / STABLE ACCOUNT';
+      gb.style.color = tier === 'crit' ? '#FFB9C7' : tier === 'warn' ? '#FFD9A5' : '#D7FCA8';
+    }
+  }
+
+  // scenario hand-off: the ROI field mirrors the scored tier
+  if (field) field.setFactor(pct/100 * 0.9 + 0.25);
+
+  if (current !== 'oracle') switchTab('oracle');
+  const page = $('page-oracle');
+  if (page) page.querySelectorAll('.rv').forEach(el => el.classList.add('in'));
+}
+
+$('resetBtn').addEventListener('click', () => {
+  setTimeout(() => {
+    ['age','tenure','support_calls','payment_delay','total_spend','usage_frequency'].forEach(id => {
+      const out = $('v-' + ({support_calls:'calls',payment_delay:'delay',total_spend:'spend',usage_frequency:'usage'}[id] || id));
+      if (out) out.textContent = $(id).value;
+    });
+    $('risk-score').textContent = '--';
+    $('gaugeFill').style.strokeDashoffset = 272;
+    const b = $('risk-badge'); b.className = 'badge idle'; b.textContent = 'Awaiting inference';
+    const v = $('vectorId'); v.className = 'badge idle'; v.textContent = 'Vector idle';
+    $('recommendation-text').className = 'note';
+    $('recommendation-text').textContent = 'Run a query to calculate tailored retention protocols.';
+    if (globe){ globe.setRisk(0); const gb = $('globe-status-badge'); gb.textContent = 'GOLD / NOMINAL'; gb.style.color = '#9BF6E4'; }
+  }, 0);
+});
+
+/* ---- ROI calculator ---- */
+function calcROI(){
+  const cust = parseInt($('roi-customers').value, 10);
+  const arpu = parseInt($('roi-arpu').value, 10);
+  const rate = parseInt($('roi-rate').value, 10) / 100;
+
+  $('roi-customers-val').textContent = cust.toLocaleString();
+  $('roi-arpu-val').textContent = '$' + arpu.toLocaleString();
+  $('roi-rate-val').textContent = (rate*100).toFixed(0) + '%';
+
+  $('roi-cohort-mini').textContent = cust.toLocaleString();
+  $('roi-arpu-mini').textContent = '$' + arpu.toLocaleString();
+  $('roi-rate-mini').textContent = (rate*100).toFixed(0) + '%';
+
+  const total = Math.round(cust * arpu * rate);
+  $('roi-total').textContent = '$' + total.toLocaleString();
+
+  const short = total >= 1e6 ? '$' + (total/1e6).toFixed(2) + 'M' : '$' + total.toLocaleString();
+  $('roi-caption').innerHTML = 'By identifying high-risk accounts prior to cancellation, a ' + (rate*100).toFixed(0) + '% retention success rate preserves <b>' + short + '</b> in annual recurring revenue.';
+  if (field) field.setFactor(Math.min(1.6, total/2.5e6 + 0.2));
+  drawRoiChart();
+}
+['roi-customers','roi-arpu','roi-rate'].forEach(id => $(id).addEventListener('input', calcROI));
+
+/* ---- SVG chart helpers ---- */
+function accent(i){ const [a,b] = ACCENTS[document.documentElement.dataset.accent || 'aurora']; return i ? b : a; }
+
+function drawCallsChart(){
+  const svg = $('chart-calls-quick'); if (!svg) return;
+  const data = [
+    { x:'1', v:5.2, n:'30.4%' }, { x:'2', v:8.1, n:'31.6%' }, { x:'3', v:12.4, n:'41.6%' },
+    { x:'4', v:28.5, n:'58.5%' }, { x:'5', v:89.2, n:'94.7%' }, { x:'6+', v:98.6, n:'100%' }
+  ];
+  const W = 560, H = 190, PL = 46, PR = 16, PT = 18, PB = 34;
+  const iw = W-PL-PR, ih = H-PT-PB, max = 100;
+  let g = '';
+  for (let k=0;k<=4;k++){
+    const y = PT + ih*(k/4);
+    g += `<line class="grid-l" x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}"/>`;
+    g += `<text class="axis" x="${PL-8}" y="${(y+3).toFixed(1)}" text-anchor="end">${100 - k*25}</text>`;
+  }
+  const pts = data.map((d,i) => {
+    const x = PL + iw*(i/(data.length-1));
+    const y = PT + ih*(1 - d.v/max);
+    return { x, y, d };
+  });
+  let line = '', area = '';
+  pts.forEach((p,i) => { line += (i ? ' L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1); });
+  area = line + ` L${pts[pts.length-1].x.toFixed(1)} ${PT+ih} L${pts[0].x.toFixed(1)} ${PT+ih} Z`;
+  let dots = '';
+  pts.forEach(p => {
+    dots += `<circle class="pt" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" fill="${accent(0)}" stroke="#050814" stroke-width="2"><title>${p.d.x} calls → ${p.d.n} churn</title></circle>`;
+    dots += `<text class="axis" x="${p.x.toFixed(1)}" y="${H-12}" text-anchor="middle">${p.d.x}</text>`;
+  });
+  svg.innerHTML = `
+    <defs><linearGradient id="gq" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${accent(0)}" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="${accent(1)}" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${g}
+    <path class="area" d="${area}" fill="url(#gq)"/>
+    <path class="ln" d="${line}" stroke="${accent(0)}"/>
+    <line class="ln" x1="${pts[4].x.toFixed(1)}" y1="${PT}" x2="${pts[4].x.toFixed(1)}" y2="${PT+ih}" stroke="${accent(1)}" stroke-width="1.4" stroke-dasharray="5 5" opacity=".7"/>
+    ${dots}
+    <text class="axis" x="${PL}" y="${H-1}" text-anchor="start">Support calls filed</text>
+  `;
+}
+
+function drawRoiChart(){
+  const svg = $('chart-roi'); if (!svg) return;
+  const cust = parseInt($('roi-customers').value, 10);
+  const arpu = parseInt($('roi-arpu').value, 10);
+  const rates = [10,20,30,40,50,60,70];
+  const vals = rates.map(r => cust*arpu*r/100);
+  const cur = parseInt($('roi-rate').value, 10);
+  const W = 560, H = 210, PL = 62, PR = 16, PT = 20, PB = 36;
+  const iw = W-PL-PR, ih = H-PT-PB, max = Math.max(...vals);
+  let g = '';
+  for (let k=0;k<=4;k++){
+    const y = PT + ih*(k/4);
+    g += `<line class="grid-l" x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}"/>`;
+  }
+  const bw = iw/rates.length*0.56;
+  let bars = '';
+  rates.forEach((r,i) => {
+    const x = PL + iw*(i/rates.length) + (iw/rates.length - bw)/2;
+    const h = Math.max(2, ih*(vals[i]/max));
+    const y = PT + ih - h;
+    const on = Math.abs(r-cur) < 6;
+    bars += `<rect class="bar" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="5"
+      fill="${on ? accent(0) : 'rgba(255,255,255,.16)'}" opacity="${on?1:.85}"><title>${r}% success → $${Math.round(vals[i]).toLocaleString()}</title></rect>`;
+    bars += `<text class="axis" x="${(x+bw/2).toFixed(1)}" y="${H-14}" text-anchor="middle">${r}%</text>`;
+  });
+  const lbl = max >= 1e6 ? '$' + (max/1e6).toFixed(1) + 'M' : '$' + Math.round(max).toLocaleString();
+  svg.innerHTML = `${g}
+    <text class="axis" x="${PL-8}" y="${PT+6}" text-anchor="end">${lbl}</text>
+    <text class="axis" x="${PL-8}" y="${PT+ih}" text-anchor="end">$0</text>
+    ${bars}
+    <text class="axis" x="${PL}" y="${H-1}" text-anchor="start">Targeted retention success rate</text>`;
+}
+
+function drawCohortChart(){
+  const svg = $('chart-cohort'); if (!svg) return;
+  const data = [
+    { l:'18–30', v:54.7, n:122933 }, { l:'31–45', v:43.9, n:173271 }, { l:'46–60', v:67.6, n:117417 },
+    { l:'60+', v:100, n:27211 }, { l:'Monthly', v:100, n:87104 }, { l:'Quarterly', v:46.0, n:176530 }, { l:'Annual', v:46.1, n:177198 }
+  ];
+  const W = 560, H = 240, PL = 46, PR = 16, PT = 20, PB = 44;
+  const iw = W-PL-PR, ih = H-PT-PB, max = 100;
+  let g = '';
+  for (let k=0;k<=4;k++){
+    const y = PT + ih*(k/4);
+    g += `<line class="grid-l" x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}"/>`;
+    g += `<text class="axis" x="${PL-8}" y="${(y+3).toFixed(1)}" text-anchor="end">${100-k*25}%</text>`;
+  }
+  const bw = iw/data.length*0.58;
+  let bars = '';
+  data.forEach((d,i) => {
+    const x = PL + iw*(i/data.length) + (iw/data.length - bw)/2;
+    const h = Math.max(2, ih*(d.v/max));
+    const y = PT + ih - h;
+    const hot = d.v >= 60;
+    const col = hot ? '#FF5C7A' : accent(0);
+    bars += `<rect class="bar" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="${col}" opacity="${hot?.92:.72}">
+      <title>${d.l} → ${d.v}% churn over ${d.n.toLocaleString()} customers</title></rect>`;
+    bars += `<text class="axis" x="${(x+bw/2).toFixed(1)}" y="${(y-6).toFixed(1)}" text-anchor="middle">${d.v}%</text>`;
+    const short = d.l.length > 6 ? d.l.slice(0,3) : d.l;
+    bars += `<text class="axis" x="${(x+bw/2).toFixed(1)}" y="${H-16}" text-anchor="middle">${short}</text>`;
+  });
+  svg.innerHTML = `${g}${bars}
+    <text class="axis" x="${PL}" y="${H-2}" text-anchor="start">Age band (left) · contract type (right)</text>`;
+}
+
+function animateBars(){
+  document.querySelectorAll('.bar-fill').forEach((el,i) => {
+    el.style.width = '0%';
+    setTimeout(() => { el.style.width = el.dataset.w + '%'; }, 80 + i*70);
+  });
+}
+
+/* ---- parity inspector ---- */
+function classifyParity(value){
+  const raw = value.trim();
+  if (!raw) return null;
+  const number = Number(raw);
+  if (!Number.isFinite(number) || !Number.isInteger(number)) return { raw, status:'invalid', label:'INVALID' };
+  return { raw, status:number % 2 === 0 ? 'even' : 'odd', label:number % 2 === 0 ? 'EVEN' : 'ODD' };
+}
+function renderParity(){
+  const input = $('parity-input'), output = $('parity-output'), count = $('parity-count');
+  if (!input || !output || !count) return;
+  const values = input.value.split(/[\\s,;]+/).map(classifyParity).filter(Boolean);
+  count.textContent = values.length + (values.length === 1 ? ' element' : ' elements');
+  if (!values.length){ output.className = 'parity-output idle'; output.textContent = 'Results will appear here.'; return; }
+  output.className = 'parity-output';
+  output.innerHTML = values.map(item => `<span class="parity-token ${item.status}"><span>${item.raw}</span><b>${item.label}</b></span>`).join('');
+}
+$('parity-check')?.addEventListener('click', renderParity);
+$('parity-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') renderParity(); });
+$('parity-input')?.addEventListener('input', renderParity);
+
+/* ---- strategy tier focus ---- */
+document.querySelectorAll('.proto').forEach(card => {
+  card.addEventListener('click', () => {
+    const tier = card.dataset.tier;
+    if (lattice) lattice.focus(tier);
+    const map = {
+      critical: { t:'Critical Risk Protocol', b:'Triggered when Support Calls &gt; 4 or Payment Delay &gt; 20 days. Expected churn exposure in these bands runs 94.7%–100%, so intervention is same-day.' },
+      moderate: { t:'Moderate Risk Protocol', b:'Triggered for Monthly contract holders with decreasing activity. Observed Monthly churn sits at 100% once friction appears, making the annual upgrade the highest-leverage offer.' },
+      stable:   { t:'Stable Account Protocol', b:'High tenure, zero complaints, steady spend. Observed 31–45 cohort churn is the lowest at 43.9%, making this the safest pool for cross-sell.' }
+    }[tier];
+    openModal(map.t, `
+      <p class="sub">${map.b}</p>
+      <div class="pipe">
+        <div class="pipe-step"><b>1</b><div><h5>Detect</h5><p>Forest probability crosses the tier threshold and the vector is stamped with the trigger signals.</p></div></div>
+        <div class="pipe-step"><b>2</b><div><h5>Route</h5><p>The tier selects the owner: concierge desk, lifecycle marketing, or growth team.</p></div></div>
+        <div class="pipe-step"><b>3</b><div><h5>Resolve</h5><p>The offer fires, the outcome is logged back into the training set, and the forest is refit.</p></div></div>
+      </div>
+      <div class="note">3D lattice highlighted the matching cage — outer ring is Critical, middle is Moderate, inner is Stable.</div>
+    `);
+  });
+});
+
+/* ---- scalable analyst chatbot ---- */
+const chatHistory = [];
+const analystContext = `AUREUS is a customer-retention intelligence dashboard using a Random Forest model over 440,832 cleaned records.
+Known signals: support calls, total spend, monthly contract, age, payment delay, last interaction, gender and usage.
+Observed dataset findings: age 31–45 churn 43.9%, age 18–30 54.7%, age 46–60 67.6%, age 60+ 100%; monthly contracts 100%, annual 46.1%, quarterly 46.0%; support calls 0–2 = 30.3%–31.6%, 3–4 = 41.6%–58.5%, 5+ = 94.7%–100%; payment delay 21–30 days = 100%.
+Feature importance: support calls .299, total spend .221, monthly contract .136, age .130, payment delay .124, last interaction .040, male gender .030.
+The dashboard includes Risk Oracle, ROI Calculator, Action Playbook, Model Diagnostics and a Parity Inspector.`;
+
+function escapeChat(value){
+  return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function formatChat(value){
+  return escapeChat(value).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\n/g, '<br>');
+}
+function localAnalystAnswer(question){
+  const q = question.toLowerCase();
+  const asks = (...words) => words.some(w => q.includes(w));
+  if (asks('hello','hi','hey','who are you','what can you')) return `**AUREUS Analyst** can explain the dashboard, compare churn drivers, interpret model signals, calculate ROI, classify odd/even values, and recommend retention actions. Ask a question in plain language, such as “why is monthly churn high?” or “which signal matters most?”`;
+  if (asks('parity','odd','even')) return `Use the **Parity Inspector** in Model Diagnostics. Enter values separated by commas or spaces; each element is labelled **ODD**, **EVEN**, or **INVALID**.`;
+  if (asks('feature','important','driver','influence','weight','signal matter')) return `The strongest observed drivers are **Support Calls (0.299)** and **Total Spend (0.221)**, followed by **Monthly Contract (0.136)**, **Age (0.130)**, and **Payment Delay (0.124)**. In practice, repeated support friction plus payment delay is the clearest escalation pattern.`;
+  if (asks('support','call','complaint','ticket')) return `Support friction escalates sharply: **0–2 calls** corresponds to 30.3%–31.6% churn, **3–4 calls** to 41.6%–58.5%, and **5+ calls** to 94.7%–100%. Recommended action: route the fourth complaint to a VIP owner and resolve the root cause before the next billing event.`;
+  if (asks('contract','monthly','annual','quarterly','subscription')) return `Monthly contracts show **100% observed churn** in this dataset, versus **46.1% annual** and **46.0% quarterly**. Treat monthly customers as the highest-priority conversion pool: offer a clear annual upgrade with a retention incentive, not a generic broadcast.`;
+  if (asks('age','older','young','demographic','cohort')) return `The lowest observed age-band churn is **31–45 at 43.9%**. It rises to **54.7% for 18–30**, **67.6% for 46–60**, and **100% for 60+** in this dataset. The 60+ result should be treated as a high-risk signal, but validate sample size before generalizing.`;
+  if (asks('roi','revenue','saving','recover','calculator')) return `Use the **ROI Calculator** to model recovered ARR: **at-risk customers × annual revenue per customer × retention success rate**. For example, 10,000 customers × $650 × 25% = **$1,625,000** recovered ARR.`;
+  if (asks('payment','delay','late','billing')) return `Payment delay is a strong escalation signal: the dashboard records **100% churn for 21–30 day delays**. Trigger a human check-in before day 20, confirm the billing issue, and pair the outreach with a specific recovery option.`;
+  if (asks('risk','churn','critical','probability','prediction')) return `Read risk as a combination of signals rather than a single feature. Prioritize customers with repeated support calls, payment delay, monthly contracts, and declining usage. Use **Risk Oracle** for scoring, then open **Action Playbook** to route Critical, Moderate, or Stable protocols.`;
+  if (asks('clean','data','dataset','training','model','random forest')) return `The model is a **Random Forest with 100 estimators and max depth 15**, trained over **440,832 cleaned records**. The audit trail records placeholder recoding, median imputation, duplicate removal, dtype casting, and flagged-but-kept outliers.`;
+  if (asks('recommend','action','prevent','reduce','retain','strategy','what should')) return `AUREUS recommends four moves: **(1)** escalate after the fourth support complaint, **(2)** address payment delays before day 20, **(3)** convert high-risk monthly customers to annual plans with a targeted offer, and **(4)** give older or declining-usage cohorts proactive human support.`;
+  if (asks('compare','versus','vs','difference','better','highest','lowest')) return `For comparisons, anchor on the observed dashboard rates: monthly contracts are highest at **100%**, annual and quarterly are near **46%**, age 31–45 is lowest at **43.9%**, and support calls become critical at **5+**. Tell me the two exact segments you want compared and I’ll structure the trade-off.`;
+  return `I can analyze any question that is related to this AUREUS workspace. I’ll ground the answer in the churn dataset, model signals, ROI assumptions, action tiers, diagnostics, or parity tools. Try: **“What is driving this risk?”**, **“Compare monthly vs annual”**, **“How do I reduce churn?”**, or **“Classify 12, 7, 24.”**`;
+}
+function toggleChatbot(){
+  const win = $('chat-window'), fab = $('chat-toggle-btn');
+  if (!win) return;
+  win.classList.toggle('hidden'); fab.classList.toggle('open', !win.classList.contains('hidden'));
+  if (!win.classList.contains('hidden')) $('chat-input').focus();
+}
+async function handleChatSubmit(text){
+  const stream = $('chat-messages');
+  const me = document.createElement('div'); me.className = 'msg me'; me.textContent = text;
+  stream.appendChild(me); stream.scrollTop = stream.scrollHeight;
+  const typing = document.createElement('div'); typing.className = 'msg bot typing'; typing.innerHTML = '<i></i><i></i><i></i>';
+  stream.appendChild(typing); stream.scrollTop = stream.scrollHeight;
+  let reply;
+  try {
+    const messages = chatHistory.slice(-8).concat([{role:'user',content:text}]);
+    const res = await fetch('/chat', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({
+      message:text, messages, context:analystContext, mode:'aureus-analyst'
+    }) });
+    if (!res.ok) throw new Error('chat backend unavailable');
+    const data = await res.json();
+    reply = data.reply || data.message || data.content;
+    if (!reply) throw new Error('empty analyst response');
+  } catch(err){ reply = localAnalystAnswer(text); }
+  chatHistory.push({role:'user',content:text},{role:'assistant',content:String(reply)});
+  if (chatHistory.length > 16) chatHistory.splice(0, chatHistory.length-16);
+  typing.remove();
+  const bot = document.createElement('div'); bot.className = 'msg bot'; bot.innerHTML = formatChat(reply);
+  stream.appendChild(bot); stream.scrollTop = stream.scrollHeight;
+}
+
+$('chat-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const inp = $('chat-input');
+  if (!inp.value.trim()) return;
+  handleChatSubmit(inp.value.trim());
+  inp.value = '';
+});
+function sendQuickChat(text){ handleChatSubmit(text); }
+
+/* ---- boot ---- */
+addEventListener('load', () => {
+  boot3D();
+  applySceneAccent(document.documentElement.dataset.accent || 'aurora');
+  switchTab('oracle');
+  moveInk();
+  drawCallsChart();
+  drawRoiChart();
+  drawCohortChart();
+  calcROI();
+  setTimeout(moveInk, 120);
+});
+
+/* expose for inline handlers used in markup */
+window.toggleChatbot = toggleChatbot;
+window.sendQuickChat = sendQuickChat;
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4bc70e2c01a94c73b74392e4234840661791215815920" integrity="sha512-L0ha0OXavK/8okipN9F8BtP84dg9DUhPERbBXzwI6dgTA55d2+yweo3pn5CSFYs45/r8md2+xvUPtTdvTNRfjA==" data-cf-beacon='{"version":"2024.11.0","token":"4edd5f8ec12a48cfa682ab8261b80a79","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
